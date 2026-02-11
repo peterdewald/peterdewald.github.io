@@ -753,25 +753,30 @@
 	  
 	}
 	
-	#page-music .music-info-links{
-	  margin-top: 12px;
+#page-music .music-info-links{
+  margin-top: 14px;
 
-	  /* exakt wie normaler Text */
-	  font-family: var(--font);
-	  font-size: var(--typo-text-size);
-	  font-weight: var(--typo-text-weight);
-	  line-height: var(--typo-text-lineheight);
-	}
+  /* Absätze: Link1 / Link2 jeweils eigene Zeile + Abstand */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  font-family: var(--font);
+  font-size: var(--typo-text-size);
+  font-weight: var(--typo-text-weight);
+  line-height: var(--typo-text-lineheight);
+}
 
 	#page-music .music-info-links a{
 	  /* Link soll Text-Typo erben */
 	  font: inherit;
-
+		font-weight: bold;
 	  color: #165BD7;
 	  text-decoration: underline;
 	}
 
 	#page-music .music-info-links a:hover{
+		font-weight: bold;
 		color: red;
 	  text-decoration: underline;
 	}
@@ -779,26 +784,16 @@
 
 	/* Rechts: zweites Textfeld (Layout wie links) */
 
-
-
 		#page-music .music-info2{
 		  position: absolute;;
 
 		  /* exakt an Stage gekoppelt */
 		  left: calc(var(--music-stage-left) + 20px);
 
-
-
 		top: calc(
 		  (var(--menu-top) + var(--menu-h) + 20px + (var(--music-rail-width) + var(--music-rail-year-h)) + 74px)
 		  - var(--music-scroll-top)
 		);
-
-
-
-
-
-
 
 		  max-width: var(--music-info-width);
 		  right: 40px;
@@ -806,7 +801,7 @@
 		  text-align: left;
 		  color: #ffffff;
 		  opacity: 1;
-		  pointer-events: none;
+		  pointer-events: auto;
 		}
 
 
@@ -1150,7 +1145,6 @@
       <div class="music-info-text">
         <div class="music-info-title">Demo Title</div>
         <div class="music-info-body">
-          <div class="music-info-links"></div>
         </div>
       </div>
     </div>
@@ -1160,6 +1154,7 @@
       <div class="music-info-text">
         <div class="music-info2-title"></div>
         <div class="music-info2-body"></div>
+		<div class="music-info-links"></div>
       </div>
     </div>
 
@@ -1840,99 +1835,70 @@
 
 
 
-			// Links: Textbox 1
-			const infoBox  = document.querySelector("#page-music .music-info");
-			const infoBox2 = document.querySelector("#page-music .music-info2");
-			if (infoBox)  infoBox.style.opacity  = "1";
-			if (infoBox2) infoBox2.style.opacity = "1";
-			
-			// NEU: Höhe von Text1 an CSS geben (für Text2-Position unter Text1)
-			requestAnimationFrame(() => {
-			  const box = document.querySelector("#page-music .music-info");
-			  if (!box) return;
-			  const h = box.getBoundingClientRect().height || 0;
-			  document.documentElement.style.setProperty("--music-info-h", `${h}px`);
-			});
+		// Links: Textbox 1
+		const infoBox  = document.querySelector("#page-music .music-info");
+		const infoBox2 = document.querySelector("#page-music .music-info2");
+		if (infoBox)  infoBox.style.opacity  = "1";
+		if (infoBox2) infoBox2.style.opacity = "1";
 
+		// NEU: Höhe von Text1 an CSS geben (für Text2-Position unter Text1)
+		requestAnimationFrame(() => {
+		  const box = document.querySelector("#page-music .music-info");
+		  if (!box) return;
+		  const h = box.getBoundingClientRect().height || 0;
+		  document.documentElement.style.setProperty("--music-info-h", `${h}px`);
+		});
 
-			const t1 = document.querySelector("#page-music .music-info-title");
-			const b1 = document.querySelector("#page-music .music-info-body");
-			let   l1 = document.querySelector("#page-music .music-info-links");
+		const t1 = document.querySelector("#page-music .music-info-title");
+		const b1 = document.querySelector("#page-music .music-info-body");
 
-			if (t1) t1.textContent = (data && data.title) ? data.title : "Demo Title";
+		if (t1) t1.textContent = (data && data.title) ? data.title : "Demo Title";
 
-			// Links-DIV sichern (weil b1.innerHTML sonst den Container löscht)
-			if (l1 && l1.parentNode) l1.parentNode.removeChild(l1);
-
-			if (b1){
-			  const raw = (data && data.text) ? data.text : "";
-			  const html = raw
-				.replace(/\n\n/g, '<span class="para-gap"></span>')
-				.replace(/\n/g, "<br>");
-			  b1.innerHTML = html;
-			}
-
-			// Links-DIV wieder einhängen (falls fehlte: neu erzeugen)
-			if (!l1){
-			  l1 = document.createElement("div");
-			  l1.className = "music-info-links";
-			}
-			if (b1) b1.appendChild(l1);
-
-			// Links füllen
-			if (l1){
-			  l1.innerHTML = "";
-
-			  if (data && data.yt){
-				const a = document.createElement("a");
-				a.href = data.yt;
-				a.target = "_blank";
-				a.rel = "noopener";
-				a.textContent = "Watch on YouTube";
-				l1.appendChild(a);
-			  }
-
-			  if (data && data.pdf){
-				if (l1.childNodes.length) l1.appendChild(document.createTextNode("  "));
-				const a = document.createElement("a");
-				a.href = data.pdf;
-				a.target = "_blank";
-				a.rel = "noopener";
-				a.textContent = "PDF Download";
-				l1.appendChild(a);
-			  }
-			}
-
-
-
-
-
-
-
-
-
-
-
-
-
+		if (b1){
+		  const raw = (data && data.text) ? data.text : "";
+		  const html = raw
+			.replace(/\n\n/g, '<span class="para-gap"></span>')
+			.replace(/\n/g, "<br>");
+		  b1.innerHTML = html;
+		}
 
 		// Rechts: Textbox 2
 		const t2 = document.querySelector("#page-music .music-info2-title");
 		const b2 = document.querySelector("#page-music .music-info2-body");
+		const l2 = document.querySelector("#page-music .music-info2 .music-info-links");
 
 		if (t2) t2.textContent = "";
+
 		if (b2){
 		  const raw2 = (data && data.text2) ? data.text2 : "";
 		  b2.innerHTML = raw2
 			.replace(/\n\n/g, '<span class="para-gap"></span>')
 			.replace(/\n/g, "<br>");
 		}
-	  }
 
+		// Links unter Text2 füllen (Container sitzt unterhalb von .music-info2-body)
+		if (l2){
+		  l2.innerHTML = "";
 
+		  if (data && data.yt){
+			const a = document.createElement("a");
+			a.href = data.yt;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "Watch on YouTube";
+			l2.appendChild(a);
+		  }
 
-
-
+		  if (data && data.pdf){
+			const a = document.createElement("a");
+			a.href = data.pdf;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "PDF Download";
+			l2.appendChild(a);
+		  }
+		}
+	}
 
 
 
