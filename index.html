@@ -627,7 +627,7 @@
 
 		#page-music .music-stage{
 		  position: absolute;;
-			top: calc(var(--music-stage-top) - var(--music-scroll-top));
+			top: calc(var(--music-stage-top) - var(--music-scroll-top) - 60px);
 
 
 		  /* 20px unter Rail + Menu-Kopplung */
@@ -693,7 +693,7 @@
 		);
 
 
-		top: calc(var(--music-stage-top) - var(--music-scroll-top) - 12px);
+		top: calc(var(--music-stage-top) - var(--music-scroll-top) - 12px - 60px);
 
 
 
@@ -717,7 +717,7 @@
     /* Text1 unter das Cover */
 
 
-	top: calc(var(--music-stage-top) + var(--music-stage-w) + 20px - var(--music-scroll-top) - 8px);
+	top: calc(var(--music-stage-top) + var(--music-stage-w) + 20px - var(--music-scroll-top) - 8px - 60px);
 
 
     /* linke Kante Text1 = linke Kante Cover */
@@ -791,7 +791,7 @@
 		  left: calc(var(--music-stage-left) + 20px);
 
 		top: calc(
-		  (var(--menu-top) + var(--menu-h) + 20px + (var(--music-rail-width) + var(--music-rail-year-h)) + 74px)
+		  (var(--menu-top) + var(--menu-h) + 20px + (var(--music-rail-width) + var(--music-rail-year-h)) + 74px - 60px)
 		  - var(--music-scroll-top)
 		);
 
@@ -1002,8 +1002,9 @@
     top: calc(
       var(--music-stage-top)
       + var(--music-stage-w)
-      + 20px
+      + 12px
       - var(--music-scroll-top)
+	  - 60px
     );
   }
 
@@ -1019,8 +1020,9 @@
       + var(--music-stage-w)
       + 20px
       + var(--music-info-h)
-      + 20px
+      + 12px
       - var(--music-scroll-top)
+	  - 60px
     );
   }
 
