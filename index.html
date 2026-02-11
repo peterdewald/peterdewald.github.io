@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peter Dewald</title>
+
+  <!--
+    WAVETERM D HP — Homepage Grundgerüst
+    Version: 004
+    Idee:
+    - Background-Video läuft dauerhaft (kein Reload beim Seitenwechsel)
+    - "Unterseiten" sind Sections, die per JS umgeschaltet werden
+    - Wortmarke (SVG) ist inline, damit die Farbe per CSS weich wechselbar ist
+  -->
+
+  <style>
+  
+  
+	/* ============================================================
+	   FONT: POPPINS LIGHT (lokal eingebunden, browser-sicher)
+	   Dateien erwartet in: ./fonts/
+	   ============================================================ */
+	@font-face{
+	  font-family: "Poppins";
+	  src:
+		url("fonts/Poppins-Light.woff2") format("woff2"),
+		url("fonts/Poppins-Light.woff") format("woff");
+	  font-weight: 300;
+	  font-style: normal;
+	  font-display: swap;
+	}
+  
+ 
+  
+  
+  
+    /* ============================================================
+       0) ZENTRALE PROJEKT-PARAMETER (hier zuerst fein-tunen)
+       ============================================================ */
+    :root {
+	
+      /* Hintergrund */
+      --bg-fallback: #000;
+      --scrim-opacity: 0.00;          /* 0.00 = aus, 0.20 = dunkler */
+
+      /* Wortmarke (SVG) */
+      --logo-color: #ff0000;          /* wird später vom Menü gesetzt */
+      --logo-top: calc(clamp(10vh, 2.2vw, 15vh) + 4vh);    /* weich: min=10vh, max=15vh */
+
+
+		--logo-optical-shift: calc(var(--logo-height) * 0.12);
+		
+		--menu-h: 90px; /* Menu-Höhe (Button 90x90 inkl. Rahmen) */
+
+    
+	  --logo-left: clamp(4vw, 4.5vw, 5vw);     /* weich: 4vw ↔ 5vw */
+
+      --home-left-offset: calc(var(--logo-height) * 0.12); /* 300px→36px, 170px→~20px */
+
+      --logo-height: clamp(170px, 23.6vw, 300px);  /* kontinuierlich: min=170, max=300 */
+
+
+
+      --logo-transition-ms: 1200ms;   /* weicher Farbwechsel */
+
+      /* Menü */
+
+	  
+	  
+		--menu-top: 20px;
+      --menu-right: clamp(3vw, 3.5vw, 4vw);   /* min=3vw, max=4vw, dazwischen weich */
+	  
+
+	  
+      
+
+
+      /* Menü – kontinuierliche Button-Skalierung (Desktop ↔ Small) */
+      --menu-gap: 20px;
+      --menu-btn-pad-y: clamp(9px, calc(8px + 0.2vw), 10px);
+      --menu-btn-pad-x: clamp(10px, calc(8px + 0.4vw), 12px);
+      --menu-btn-radius: clamp(9px, calc(8px + 0.2vw), 10px);
+
+      --typo-button-size: clamp(13px, calc(12px + 0.2vw), 14px);
+
+
+
+
+      /* Content-Box (Text über dem Video) */
+      --content-max-width: 72ch;
+      --content-padding: 6vh 6vw;
+
+      /* Typo */
+	  
+	  --font: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+	  
+	  
+	  
+
+
+
+		/* ============================================================
+		   TYPOGRAPHY – zentral (Headline / Text / Button)
+		   ============================================================ */
+		--typo-headline-size: clamp(26px, 1.6vw, 28px);
+		--typo-headline-weight: 500;
+		--typo-text-lineheight: 1.5;		
+		--typo-headline-color: #ffffff;
+		
+		
+		--typo-logo-size: 63px;          /* Startwert: wird auf 90px Kleinbuchstaben-Höhe eingependelt */
+		--typo-logo-weight: 300;          /* Poppins Light */
+		--typo-logo-lineheight: 1;        /* kein vertikales Scaling */
+		--typo-logo-letterspacing: 0em;
+	
+		
+		
+
+		--typo-text-size: clamp(14px, 1.6vw, 16px);
+		--typo-text-weight: 300;
+		--typo-text-lineheight: 1.5;
+		--typo-text-color: #ffffff;
+
+
+		--typo-button-weight: 300;
+		--typo-button-letterspacing: 0.02em;
+		--typo-button-color: #ffffff;
+
+
+
+	/* DEBUG: Viewport size (temporary) */
+	#viewport-debug{
+	  position: fixed;
+	  top: 8px;
+	  left: 8px;
+	  z-index: 2;              /* über Video/Scrim, unter Menü */
+	  padding: 6px 8px;
+	  font-family: var(--font);
+	  font-size: 12px;
+	  line-height: 1;
+	  color: #ffffff;
+	  background: rgba(0,0,0,0.45);
+	  border-radius: 6px;
+	  pointer-events: none;    /* nie klickbar */
+	}
+
+
+
+
+
+
+    }
+
+    /* ============================================================
+       1) PAGE BASE
+       ============================================================ */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg-fallback); /* Fallback, falls Video nicht lädt */
+      overflow: hidden;               /* Landing-Page: kein Scroll */
+      font-family: var(--font);
+	  font-weight: 300;
+
+    }
+
+    /* ============================================================
+       2) BACKGROUND VIDEO (läuft dauerhaft)
+       ============================================================ */
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    /* Optionaler "Scrim" (dunkelt ab, verbessert Lesbarkeit) */
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,var(--scrim-opacity));
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       3) WORTMARKE (SVG INLINE, Farbe per CSS "color")
+       ============================================================ */
+    .logo {
+      position: fixed;
+	  top: 33px;
+	  left: var(--menu-right);
+ 
+      z-index: 3;                 /* über Video + Scrim + Content */
+      pointer-events: none;       /* Logo ist nicht klickbar */
+      color: var(--logo-color);   /* <<<<<< HIER wird currentColor gespeist */
+      transition: color var(--logo-transition-ms) ease;
+    }
+
+
+	.logo-name{
+	  font-family: var(--font);
+	  font-size: var(--typo-logo-size);
+	  font-weight: var(--typo-logo-weight);
+	  letter-spacing: var(--typo-logo-letterspacing);
+	  line-height: var(--typo-logo-lineheight);
+
+	  white-space: nowrap;
+	  display: block;
+	}
+
+
+
+    /* SVG skaliert über height, Breite automatisch */
+    .logo svg {
+      height: var(--logo-height);
+      width: auto;
+      display: block;
+	  transform: translateX(calc(-1 * var(--logo-optical-shift)));
+
+    }
+
+
+	/* ============================================================
+	   TYPOGRAPHY – KLASSEN
+	   ============================================================ */
+
+	.typo-headline{
+	  font-family: var(--font);
+	  font-size: var(--typo-headline-size);
+	  font-weight: var(--typo-headline-weight);
+	  letter-spacing: var(--typo-headline-letterspacing);
+	  color: var(--typo-headline-color);
+	}
+
+	.typo-text{
+	  font-family: var(--font);
+	  font-size: var(--typo-text-size);
+	  font-weight: var(--typo-text-weight);
+	  line-height: var(--typo-text-lineheight);
+	  color: var(--typo-text-color);
+	}
+
+	.typo-button{
+	  font-family: var(--font);
+	  font-size: var(--typo-button-size);
+	  font-weight: var(--typo-button-weight);
+	  letter-spacing: var(--typo-button-letterspacing);
+	  color: var(--typo-button-color);
+	}
+
+
+
+
+
+
+    /* ============================================================
+       4) MENU (später erweiterbar)
+       ============================================================ */
+	
+	.menu {
+      position: fixed;
+      top: var(--menu-top);
+      right: var(--menu-right);
+      z-index: 4;
+      display: flex;
+      gap: var(--menu-gap);
+      align-items: center;
+    }
+
+
+
+
+	@media (max-width: 1050px) {
+	  :root{
+		--menu-top: 130px; /* 20px + 90px */
+	  }
+	}
+
+
+
+	.menu button {
+	  appearance: none;
+
+	  width: 90px;
+	  height: 90px;
+	  box-sizing: border-box;   /* Rahmen in 90px enthalten */
+
+	  border: 1px solid rgba(255,255,255,0.35);
+	  background: rgba(0,0,0,0.20);
+	  color: var(--typo-button-color);
+
+	  padding: 0;               /* Größe kommt jetzt nur über width/height */
+	  border-radius: 0;         /* eckig */
+
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+
+	  font-size: var(--typo-button-size);
+	  font-weight: var(--typo-button-weight);
+	  letter-spacing: var(--typo-button-letterspacing);
+
+	  cursor: pointer;
+
+	  backdrop-filter: blur(6px);
+	  -webkit-backdrop-filter: blur(6px);
+	  transition: background 250ms ease, border-color 250ms ease, color 250ms ease;
+	}
+
+    .menu button:hover {
+      background: rgba(0,0,0,0.40);
+      
+    }
+
+    .menu button.active {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.60);
+      
+    }
+
+
+
+
+
+    /* ============================================================
+       5) CONTENT LAYER (Unterseiten)
+       ============================================================ */
+	.content{
+	  position: fixed;
+	  inset: 0;
+	  z-index: 2;
+
+	  /* Scroll global */
+	  overflow-y: auto;
+	  overflow-x: hidden;
+	  -webkit-overflow-scrolling: touch;
+
+	  /* Layout erstmal „neutral“ */
+	  padding: var(--content-padding);
+	  box-sizing: border-box;
+
+	  text-align: center;
+	  color: #ffffff;
+	}
+
+
+	/* NUR wenn Music aktiv ist: globales Content-Scrolling AUS */
+	.content:has(#page-music.active){
+	  overflow: hidden;
+	}
+
+
+
+
+	.page{
+	  display: none;                 /* wichtig: nur aktive Page ist im Layout */
+	  max-width: var(--content-max-width);
+	  opacity: 0;
+	  pointer-events: none;
+	  transition: opacity 400ms ease;
+	  position: relative;            /* wichtig fürs Scroll-Layout */
+	}
+
+	.page.active{
+	  display: block;
+	  opacity: 1;
+	  pointer-events: auto;
+	}
+
+	.page.leaving{
+	  display: block;        /* bleibt im Layout, damit opacity-fade sichtbar ist */
+	  opacity: 0;
+	  pointer-events: none;
+	}
+
+
+
+    .page h1 {
+      margin: 0;
+      font-size: var(--typo-headline-size);
+	  font-weight: var(--typo-headline-weight);
+      letter-spacing: var(--typo-headline-letterspacing);
+      color: var(--typo-headline-color);
+
+    }
+
+    .page p {
+      margin: 14px 0 0 0;
+      opacity: 0.86;
+      font-size: var(--typo-text-size);
+	  line-height: var(--typo-text-lineheight);
+	  font-weight: var(--typo-text-weight);
+      color: var(--typo-text-color);
+
+    }
+
+
+
+
+
+	/* ============================================================
+	   MUSIC — ZENTRALE PARAMETER (statisch)
+	   ============================================================ */
+	:root{
+	  --music-rail-width: 90px;      /* Ziel: ~100px … später fein */
+	  --music-rail-year-h: 22px;
+	  --music-rail-gap: 20px;
+
+	  --music-stage-width: 530px;     /* max Größe des großen Covers */
+	  --music-stage-w: var(--music-stage-width);
+	  --music-stage-top: 0px;
+
+
+	  --music-scroll-top: calc(
+		var(--menu-top) + var(--menu-h)  + 25px +
+		(var(--music-rail-width) + var(--music-rail-year-h))
+	  );
+
+
+
+
+
+	  --music-stage-scale: 1;
+
+	  --music-stage-x: -100%;
+	  --music-stage-y: 0px;
+	  --music-stage-left: 50%;
+	  --music-stage-anchor-right-x: 50vw;   /* JS setzt das sauber (px) */
+
+
+	  --music-info-width: 50ch;       /* Breite Textbox */
+	  --music-text-gap: 20px;
+
+		--music-stage-top: calc(
+		  var(--menu-top) + var(--menu-h) + 20px +
+		  (var(--music-rail-width) + var(--music-rail-year-h)) + 90px
+		);
+
+
+	  
+	}
+
+
+
+
+
+
+
+
+	/* ============================================================
+	   MUSIC — PROTOTYP LAYOUT (Rail rechts / Stage Mitte / Text links)
+	   ============================================================ */
+
+
+	#page-music{
+
+	  
+	    position: fixed;
+		inset: 0;
+		max-width: none;
+		min-height: 100vh;
+		overflow: hidden; /* verhindert, dass Music selbst wieder "global" scrollt */
+	  
+	  
+	  
+	  
+	}
+
+
+
+
+
+	#page-music .music-scroll{
+	  position: absolute;
+	  left: 0;
+	  right: 0;
+	  top: var(--music-scroll-top);
+	  bottom: 0;
+
+	  overflow-y: auto;
+	  overflow-x: hidden;
+	  -webkit-overflow-scrolling: touch;
+
+	  /* kein Layout-Shift durch Scrollbar */
+	  scrollbar-gutter: stable;
+	}
+
+
+
+
+
+
+	/* Obere Rail */
+
+	#page-music .music-rail{
+	  position: fixed;
+
+	  /* NEU: Menu -> 20px -> Rail */
+	  top: calc(var(--menu-top) + var(--menu-h) + 20px);
+
+
+	  /* NEU: horizontal mittig im Viewport */
+	  left: 50%;
+	  right: auto;
+	  transform: translateX(-50%);
+
+	  /* NEU: „Rail-Höhe“ bleibt über bestehende Variable */
+	
+	  height: calc(var(--music-rail-width) + var(--music-rail-year-h));
+
+
+	  /* NEU: Breite kontrolliert, aber responsive */
+	  width: min(1700px, calc(100vw - (2 * var(--menu-right))));
+
+	  z-index: 2;
+	  overflow: hidden;          /* bleibt so: wir steuern per translate */
+	  touch-action: none;        /* bleibt erstmal so */
+
+	  /* Rail: links/rechts ausblenden (Fade) */
+	  -webkit-mask-image: linear-gradient(to right,
+		transparent 0%,
+		#000 10%,
+		#000 90%,
+		transparent 100%);
+	  mask-image: linear-gradient(to right,
+		transparent 0%,
+		#000 10%,
+		#000 90%,
+		transparent 100%);
+	}
+
+	#page-music .music-rail-inner{
+	  display: flex;
+	  flex-direction: row;
+	  gap: var(--music-rail-gap);
+	  align-items: flex-start;
+
+
+	  /* statt oben/unten jetzt links/rechts, damit First/Last in die Mitte kann */
+	  padding-left: 35vw;
+	  padding-right: 35vw;
+	  padding-top: 0;
+	  padding-bottom: 0;
+	}
+
+	/* Center-Marker: zeigt die "Mitte" der Rail */
+	#page-music .music-rail::after{
+	  content: "";
+	  position: absolute;
+	  top: 10%;
+	  bottom: 10%;
+	  left: 50%;
+	  width: 1px;
+	  transform: translateX(-50%);
+	  background: transparent;
+	  pointer-events: none;
+	}
+
+	/* Jahreszahl-Zeilen */
+	#page-music .rail-year{
+	  font-size: var(--typo-text-size);
+	  font-weight: var(--typo-text-weight);
+	  letter-spacing: var(--typo-text-letterspacing);
+	  color: var(--typo-text-color);
+	  opacity: 0.7;
+	  margin: 0;
+	  line-height: 1;
+	  text-align: center;
+	  width: 100%;
+	  pointer-events: none;
+	}
+
+
+	/* Cover-Buttons in der Rail */
+	#page-music .rail-item{
+	  appearance: none;
+	  border: 0;
+	  padding: 0;
+	  margin: 0;
+	  background: transparent;
+	  cursor: pointer;
+	  outline: none;
+	  flex: 0 0 auto;
+
+	  width: var(--music-rail-width);
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  gap: 6px;
+	}
+
+	#page-music .rail-item:focus{
+	  outline: none;
+	}
+
+	/* Thumbnail-Bilder */
+
+	#page-music .rail-thumb{
+	  display: block;
+	  width: var(--music-rail-width);
+	  height: var(--music-rail-width);
+	  object-fit: cover;
+	  border: 0;
+	  outline: 0;
+	  box-shadow: none;
+
+	  filter: grayscale(1);
+	  opacity: 0.35;
+	  transition:
+		opacity 300ms ease,
+		filter 300ms ease;
+	}
+
+	/* Rail: Item im Zentrum */
+	#page-music .rail-item.is-center .rail-thumb{
+	  filter: grayscale(0);
+	  opacity: 1.0;
+	}
+
+
+
+
+		#page-music .music-stage{
+		  position: absolute;;
+			top: calc(var(--music-stage-top) - var(--music-scroll-top));
+
+
+		  /* 20px unter Rail + Menu-Kopplung */
+
+
+;
+		
+
+		  /* rechte Kante = --music-stage-left (vom JS in px gesetzt) */
+		  left: var(--music-stage-left);
+		  transform: translateX(-100%);
+		  transform-origin: top right;
+
+		  width: var(--music-stage-w);
+		  max-width: none;
+
+
+		  z-index: 2;
+		  pointer-events: none;
+		  opacity: 1;
+		  transition: opacity 500ms ease;
+		}
+
+		@media (max-width: 910px){
+		  :root{
+			--music-stage-w: clamp(
+			  310px,
+			  calc(310px + (100vw - 710px) * 1.1),
+			  530px
+			);
+		  }
+		}
+
+
+
+
+	#page-music .stage-cover{
+	  display: block;
+	  width: 100%;
+	  height: auto;
+	  border: 0;
+	  outline: 0;
+	  box-shadow: none;
+
+	  position: absolute;
+	  inset: 0;
+	  opacity: 1;
+	  transition: opacity 500ms ease;
+	}
+
+
+
+	/* Links: Textbox (Platzhalter) */
+	#page-music .music-info{
+	  position: absolute;;
+
+	  left: var(--menu-right);
+	  
+		width: calc(
+		  (var(--music-stage-left) - var(--music-stage-w))  /* linke Coverkante */
+		  - 20px                                            /* Abstand Text->Cover */
+		  - var(--menu-right)                               /* linke Textkante */
+		);
+
+
+		top: calc(var(--music-stage-top) - var(--music-scroll-top) - 12px);
+
+
+
+
+
+		box-sizing: border-box;
+		padding-right: 8px;
+
+	  z-index: 2;
+	  text-align: left;
+	  color: #ffffff;                /* wie gewünscht: Text schwarz */
+	  opacity: 1;
+	  transition: opacity 500ms ease;
+	}
+
+
+
+@media (max-width: 1290px){
+  #page-music .music-info{
+
+    /* Text1 unter das Cover */
+
+
+	top: calc(var(--music-stage-top) + var(--music-stage-w) + 20px - var(--music-scroll-top) - 8px);
+
+
+    /* linke Kante Text1 = linke Kante Cover */
+    left: calc(var(--music-stage-left) - var(--music-stage-w));
+
+    /* rechte Kante = 20px vor Viewport */
+    right: 20px;
+
+    /* alte Breiten/Transforms neutralisieren */
+    width: auto;
+    transform: none;
+  }
+}
+
+
+
+
+	#page-music .music-info-title{
+	  font-size: var(--typo-headline-size);
+	  font-weight: var(--typo-headline-weight);
+	  letter-spacing: var(--typo-headline-letterspacing);
+	}
+
+	#page-music .music-info-body{
+	  margin-top: 10px;
+	  font-size: var(--typo-text-size);
+	  font-weight: var(--typo-text-weight);
+	  line-height: var(--typo-text-lineheight);
+		  .para-gap{
+			display:block;
+			height: 14px;
+		  }
+	  
+	}
+	
+#page-music .music-info-links{
+  margin-top: 14px;
+
+  /* Absätze: Link1 / Link2 jeweils eigene Zeile + Abstand */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  font-family: var(--font);
+  font-size: var(--typo-text-size);
+  font-weight: var(--typo-text-weight);
+  line-height: var(--typo-text-lineheight);
+}
+
+	#page-music .music-info-links a{
+	  /* Link soll Text-Typo erben */
+	  font: inherit;
+		font-weight: bold;
+	  color: #165BD7;
+	  text-decoration: underline;
+	}
+
+	#page-music .music-info-links a:hover{
+		font-weight: bold;
+		color: red;
+	  text-decoration: underline;
+	}
+		
+
+	/* Rechts: zweites Textfeld (Layout wie links) */
+
+		#page-music .music-info2{
+		  position: absolute;;
+
+		  /* exakt an Stage gekoppelt */
+		  left: calc(var(--music-stage-left) + 20px);
+
+		top: calc(
+		  (var(--menu-top) + var(--menu-h) + 20px + (var(--music-rail-width) + var(--music-rail-year-h)) + 74px)
+		  - var(--music-scroll-top)
+		);
+
+		  max-width: var(--music-info-width);
+		  right: 40px;
+		  z-index: 2;
+		  text-align: left;
+		  color: #ffffff;
+		  opacity: 1;
+		  pointer-events: auto;
+		}
+
+
+
+
+
+	#page-music .music-info2-title{
+	  font-size: var(--typo-headline-size);
+	  font-weight: var(--typo-headline-weight);
+	  letter-spacing: var(--typo-headline-letterspacing);
+	}
+
+	#page-music .music-info2-body{
+	  margin-top: 10px;
+	  font-size: var(--typo-text-size);
+	  font-weight: var(--typo-text-weight);
+	  line-height: var(--typo-text-lineheight);
+		.para-gap{
+		  display: block;
+		  height: 14px;
+		}
+	  
+	}
+		
+
+
+
+
+
+
+
+	/* ============================================================
+       HOME — linksbündig unter Wortmarke + alles in Headline-Typo
+       ============================================================ */
+
+
+#page-home{
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  max-width: none;
+  z-index: 2;
+}
+
+
+
+/* HOME — Scroll-Container unterhalb des Menus */
+#page-home .home-scroll{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--menu-top) + var(--menu-h));
+  bottom: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  padding-top: 150px;   /* entspricht deinem bisherigen Home-Offset */
+  padding-bottom: 25vh; /* Reserve, damit Cover immer erreichbar bleibt */
+
+  box-sizing: border-box;
+  text-align: center;
+}
+
+
+
+
+
+	/* ============================================================
+	   GENERIC PAGES — unter Logo starten (scrollfähig)
+	   ============================================================ */
+	#page-waveterm,
+	#page-vst,
+	#page-contact{
+	  position: relative;
+	  margin-left: var(--menu-right);
+	  margin-top: calc(var(--logo-top) + var(--logo-height) + 2vh);
+
+	  text-align: left;
+	  max-width: var(--content-max-width);
+	  min-height: 100vh;
+	}
+
+
+
+#home-latest-cover{
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+
+  margin-top: 80px;
+  width: 350px;
+  opacity: 0.5;
+
+  filter: grayscale(1);
+  image-rendering: auto;
+
+  pointer-events: auto;
+  cursor: pointer;
+
+  z-index: 2;
+}
+
+
+
+
+	
+	
+	/* HOME latest cover — animation states */
+	#home-latest-cover{
+	  transition:
+		opacity 25s linear,
+		width 25s linear;
+	}
+
+	#home-latest-cover.is-init{
+	  opacity: 0;
+	  width: 250px;
+	}
+	
+	
+
+    /* HOME: Text-Typo (kein Headline) */
+    #page-home h1,
+    #page-home p{
+      font-family: var(--font);
+      font-size: var(--typo-text-size);
+      font-weight: var(--typo-text-weight);
+      line-height: var(--typo-text-lineheight);
+      letter-spacing: 0;
+      color: var(--typo-text-color);
+      opacity: 1;
+      margin: 0;
+    }
+
+    /* optionaler Abstand, falls p später genutzt wird */
+    #page-home p{
+      margin-top: 12px;
+    }
+
+
+
+
+
+
+
+
+    /* ============================================================
+       6) MOBILE / SMALL SCREENS
+       ============================================================ */
+    @media (max-width: 720px) {
+      :root {
+
+
+      }
+
+
+
+      .menu {
+
+      }
+
+      .menu button {
+
+      }
+
+      .content {
+        padding: 7vh 6vw;
+      }
+    }
+	
+	
+	
+	
+@media (max-width: 700px){
+
+  /* COVER: linke obere Ecke an linke Kante des selektierten Rail-Covers */
+  #page-music .music-stage{
+    left: var(--music-stage-left-edge);
+    transform: none;
+    transform-origin: top left;
+  }
+
+  /* TEXT1: bleibt an Cover gekoppelt (links unter Cover) */
+  #page-music .music-info{
+    left: var(--music-stage-left-edge);
+    right: 20px;
+    width: auto;
+    transform: none;
+
+    top: calc(
+      var(--music-stage-top)
+      + var(--music-stage-w)
+      + 20px
+      - var(--music-scroll-top)
+    );
+  }
+
+  /* TEXT2: unter Text1, 20px Abstand, gleiche linke Flucht */
+  #page-music .music-info2{
+    left: var(--music-stage-left-edge);
+    right: 20px;
+    width: auto;
+    max-width: none;
+
+    top: calc(
+      var(--music-stage-top)
+      + var(--music-stage-w)
+      + 20px
+      + var(--music-info-h)
+      + 20px
+      - var(--music-scroll-top)
+    );
+  }
+
+}
+	
+	
+	
+	
+	
+	
+	
+  </style>
+</head>
+
+<body>
+  <!-- ============================================================
+       BACKGROUND VIDEO — bleibt immer aktiv
+       ============================================================ -->
+  <video class="bg-video"
+         src="Home_Page_001.mp4"
+         autoplay
+         muted
+         loop
+         playsinline
+         preload="auto">
+    Dein Browser unterstützt kein HTML5-Video.
+  </video>
+
+
+  <div id="viewport-debug">—</div>
+	
+
+
+  <div class="scrim"></div>
+
+  <!-- ============================================================
+       MENU — schaltet nur Inhalte + Wortmarkenfarbe
+       ============================================================ -->
+  <nav class="menu" aria-label="Hauptmenü">
+    <!-- data-page = welche "Unterseite" sichtbar wird
+         data-color = welche Wortmarkenfarbe gesetzt wird -->
+    <button type="button" class="active" data-page="home"      data-color="#ff0000">Home</button>
+	<button type="button"                data-page="music"     data-color="#ffffff">Music</button>
+    <button type="button"                data-page="waveterm"  data-color="#165BD7">Waveterm D</button>
+    <button type="button"                data-page="vst"  	   data-color="#ffd200">VST Plugins</button>
+    <button type="button"                data-page="contact"   data-color="#ffffff">Contact</button>
+  </nav>
+
+  <!-- ============================================================
+       WORTMARKE — INLINE SVG (Farbe kommt über .logo { color: ... })
+       ============================================================ -->
+  <div class="logo" aria-hidden="true">
+		<div class="logo-name">peter dewald</div>
+
+  </div>
+
+  <!-- ============================================================
+       CONTENT — "Unterseiten" (werden nur umgeschaltet)
+       ============================================================ -->
+  <main class="content">
+    <section id="page-home" class="page active">
+
+
+
+<div class="home-scroll">
+  <h1>classic electronic music <br>
+    5.1 surround production <br>
+    music software
+  </h1>
+  <p></p>
+  <img id="home-latest-cover" src="" alt="Latest release cover">
+</div>
+
+
+
+
+
+
+
+    </section>
+
+    <section id="page-waveterm" class="page">
+      <h1></h1>
+      <p>
+        
+      </p>
+    </section>
+
+	<section id="page-vst" class="page">
+	  <h1></h1>
+	  <p>
+		
+	  </p>
+	</section>
+
+
+<section id="page-music" class="page">
+  <!-- ============================================================
+       MUSIC — PROTOTYP LAYOUT (noch ohne Daten/Logik)
+       ============================================================ -->
+
+  <!-- Rechte Spalte: scrollbares Cover-Menü (wird später animiert) -->
+  <div class="music-rail" aria-label="Music Cover Menu" id="musicRail">
+
+    <div class="music-rail-inner">
+	  
+    </div>
+  </div>
+
+   
+   
+  <!-- Mitte + Text: jetzt im Scroll-Container -->
+  <div class="music-scroll" aria-label="Music Scroll Area">
+
+    <!-- Mitte: großes Cover (Platzhalter) -->
+    <div class="music-stage" aria-label="Selected Cover">
+      <img class="stage-cover" src="covers/demo.webp" alt="Selected cover">
+    </div>
+
+    <!-- Links: Textbox (Platzhalter) -->
+    <div class="music-info" aria-label="Release Info">
+      <div class="music-info-text">
+        <div class="music-info-title">Demo Title</div>
+        <div class="music-info-body">
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechts: zweites Textfeld (wie links, später befüllt) -->
+    <div class="music-info2" aria-label="Release Info 2">
+      <div class="music-info-text">
+        <div class="music-info2-title"></div>
+        <div class="music-info2-body"></div>
+		<div class="music-info-links"></div>
+      </div>
+    </div>
+
+    <!-- Reserve/Platz für zukünftige Inhalte unterhalb des Viewports -->
+    <div class="music-scroll-spacer"></div>
+
+  </div>
+   
+   
+   
+   
+   
+   
+</section>
+
+    <section id="page-contact" class="page">
+      <h1></h1>
+      <p>
+        
+      </p>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       JS — minimal: Seiten umschalten + Wortmarkenfarbe weich wechseln
+       ============================================================ -->
+  <script>
+    // ------------------------------------------------------------
+    // 1) Zentrale Hookpoints
+    // ------------------------------------------------------------
+    const root = document.documentElement;
+    const menuButtons = document.querySelectorAll('.menu button');
+    const pages = document.querySelectorAll('.page');
+
+    // ------------------------------------------------------------
+    // 2) Hilfsfunktion: Seite aktivieren
+    // ------------------------------------------------------------
+    function activatePage(pageKey, colorHex) {
+      // Pages
+      
+	  
+	  
+	  
+	// Alte aktive Page sauber ausblenden (Fade)
+	const current = document.querySelector(".page.active");
+	const target  = document.getElementById('page-' + pageKey);
+
+	// Alte aktive Page nur ausblenden, wenn es NICHT die Zielseite ist
+	if (current && current !== target){
+	  current.classList.add("leaving");
+	  setTimeout(() => {
+		current.classList.remove("active");
+		current.classList.remove("leaving");
+	  }, 420);
+	}
+
+	// Alle anderen sicher deaktivieren (ohne Animation)
+	pages.forEach(p => {
+	  if (p !== current){
+		p.classList.remove("active");
+		p.classList.remove("leaving");
+	  }
+	});
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+
+      if (target) target.classList.add('active');
+	  
+	  
+		// NEU: beim Seitenwechsel immer nach oben
+		const scroller = document.querySelector('.content');
+		if (scroller) scroller.scrollTop = 0;
+			  
+	  
+	  
+
+      // Menü-Highlight
+      menuButtons.forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(menuButtons).find(b => b.dataset.page === pageKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Wortmarkenfarbe (currentColor)
+      if (colorHex) root.style.setProperty('--logo-color', colorHex);
+	  
+	  
+	// HOME latest cover animation (reliable restart)
+	const homeCover = document.getElementById("home-latest-cover");
+	if (homeCover){
+
+	  // Timer sauber killen (falls man schnell hin/her klickt)
+	  if (homeCover._homeTimer) clearTimeout(homeCover._homeTimer);
+
+	  // 1) IMMER sofort auf Startzustand snappen (ohne Transition)
+	  homeCover.style.transition = "none";
+	  homeCover.classList.add("is-init");
+	  homeCover.offsetHeight; // force reflow -> garantiert, dass der Startzustand "greift"
+	  homeCover.style.transition = ""; // zurück auf CSS (25s)
+
+	  // 2) Nur auf Home: nach 2s Richtung Endzustand animieren
+	  if (pageKey === "home"){
+		homeCover._homeTimer = setTimeout(() => {
+		  homeCover.classList.remove("is-init");
+		}, 2000);
+	  }
+	}
+	  
+	  
+	  
+	  
+	  
+    }
+
+    // ------------------------------------------------------------
+    // 3) Click Handler
+    // ------------------------------------------------------------
+    menuButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pageKey = btn.dataset.page;
+        const colorHex = btn.dataset.color;
+        activatePage(pageKey, colorHex);
+      });
+    });
+
+
+
+	// HOME cover click -> open Music page
+	(function bindHomeCoverClick(){
+	  const img = document.getElementById("home-latest-cover");
+	  if (!img) return;
+
+	  img.addEventListener("click", () => {
+		activatePage("music", "#ffffff");
+	  });
+	})();
+
+
+
+
+    // Startzustand (defensiv)
+
+	
+
+	/* ============================================================
+	   MUSIC — DATA (zentral)
+	   ============================================================ */
+	const MUSIC_RELEASES = [
+	  {
+		id: "1",
+		year: "1989",
+		cover: "covers/01 ANT Cover.webp",
+		title: "Ant",
+		text:"During the relaunch phase of *Moondawn*, Klaus Schulze supported this project with personal advice. He particularly appreciated the D-50 main sequence used in *The Third Eye* and contributed important ideas to the development of *Hunted* and *Times of Hate*.\n\nChristoph Reshöft, who also mixed Klaus Schulze’s album *EnTrance*, was responsible for the recording, including the Kunstkopf (dummy head) production.\n\nSingle Tracks:\n Hunted, Oakland, The third eye, TMYN, Times of hate",
+		text2:"Composed, arranged and performed in 1989\n\nInstruments: Roland, Oberheim, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf\n\nRecorded at Jupiter Tonstudio by Christoph Reshöft\n\nMastered by Überschall at \nSaturn 5 Studio",
+		yt: "https://youtu.be/Cqr_F8_n5pg",
+		pdf: null
+	  },
+
+	  {
+		id: "2",
+		year: "1989",
+		cover: "covers/02 ASCAM Cover.webp",
+		title: "Ascam",
+		text:"A musical bridge between the pre- and post-Schulze periods. For a long time, the piece remained unpublished, as it resisted clear classification. After gaining unexpected attention on MusicHub, *Ascam* was released on YouTube as part of *The Dark Matter Files*, accompanied by a dedicated video. \n\nWhile the technical limitations of the equipment are still audible, the composition already points toward later program-music concepts, evoking the imagery of opening and closing doors in an abandoned castle.",
+		text2:"Composed, arranged and performed in 1989\n\nInstruments: Roland, Oberheim, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf\n\nRecorded at WALHALL ems\n\nRemastered by Überschall at\nSaturn 5 Studio",
+		yt: "https://youtu.be/8UOxVArHo6E",
+		pdf: null
+	  },
+
+	  {
+		id: "3",
+		year: "1990",
+		cover: "covers/03 GO Cover.webp",
+		title: "Go",
+		text:"The second album created under the guidance of Klaus Schulze, reflecting on time — past, present, future, and the perception of time itself.\n\nChristoph Reshöft again took the position at the mixing desk, shaping the sound with great precision. During this period, Klaus Schulze was working on *Miditerranean Pads* and particularly appreciated the bass lines, unconventional generated with the CZ-1000.\n\nSingle Tracks:\nThe Faded Time, The Present Time, The Future Time, The Time",
+		text2:"Composed, arranged and performed in 1990\n\nInstruments: Roland, Oberheim, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf\n\nRecorded at Jupiter Tonstudio by Christoph Reshöft\n\nMastered by Überschall at \nSaturn 5 Studio",
+		yt: "https://youtu.be/qfeM9WvGasg",
+		pdf: null
+	  },
+
+	  {
+		id: "4",
+		year: "1991",
+		cover: "covers/04 DEAD FRIEND Cover.webp",
+		title: "Dead Friend",
+		text:"The first album of the program-music era, combining narrative concepts with elements of Berlin School.\n\n*Dead Friend* follows the inner journey of its protagonist through the course of a long day. A PDF containing the complete program and narrative structure is available for download below.",
+		text2:"Composed, arranged and performed in 1991\n\nInstruments: Roland, Oberheim, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf\n\nRecorded at WALHALL ems\n\nMastered by Überschall",
+		yt: "https://youtu.be/Bj8Ez6IwKvo",
+		pdf: "documents/Dead Friend 02.pdf"
+	  },
+
+	  {
+		id: "5",
+		year: "1991",
+		cover: "covers/05 Robot Dawn Cover.webp",
+		title: "Robot Dawn",
+		text:"The second release of the program-music period, continuing the fusion of narrative structure and Berlin School aesthetics.\n\n*Robot Dawn* tells the story of a robot caught between past and future. A PDF containing the complete program is available for download below.",
+		text2:"Composed, arranged and performed in 1991\n\nInstruments: Roland, Oberheim, Moog, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf\n\nRecorded at WALHALL ems\n\nMastered by Überschall",
+		yt: "https://youtu.be/v1QpLKBPCAg",
+		pdf: "documents/Robot Dawn 02.pdf"
+	  },
+
+	  {
+		id: "6",
+		year: "1992",
+		cover: "covers/06 The Inquisitor Cover.webp",
+		title: "The Inquisitor",
+		text:"By the early 1990s, the program-music era reached a provisional peak.\n\nThe album tells the story of a sorcerer’s apprentice whose mystical world is gradually destroyed by an inquisitor. Expanded equipment from Moog, Roland and PPG significantly improved performance possibilities. \n\nA PDF containing the complete program is available for download below.",
+		text2:"Composed, arranged and performed in 1992\n\nInstruments: Roland, Oberheim, Moog, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf, PPG\n\nRecorded at WALHALL ems\n\nMastered by Überschall",
+		yt: "https://youtu.be/Jm2SpVidJMM",
+		pdf: "documents/The Inquisitor 02.pdf"
+	  },
+
+	  { 
+	  id:"7", 
+	  year:"1994", 
+	  cover:"covers/07 Dance of Runes Cover.webp", 
+	  title:"Dance Of Runes", 
+	  text:"A work from the program-music era, lost for more than two decades and only recently rediscovered and released.\n\nBased on the Edda, the program follows the path of Germanic mythology, moving through the world of the gods and culminating in the legendary emergence of the runic script.\nA PDF containing the complete program is available for download below.\n\nThe section *Worldash Yggdrasil* is marked by the expressive cello performance of Helge Martensen, adding a human, contemplative voice to the mythological narrative.",
+	  text2:"Composed, arranged and performed in 1994\nCello on *Worldash Yggdrasil* by Helge Martensen\n\nInstruments: Roland, Oberheim, Moog, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf, PPG\n\nRecorded at WALHALL ems and *kleiner Sendesaal*\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/eNyynyO8iHY", 
+	  pdf:"documents/Dance Of Runes 02.pdf" 
+	  },
+	  
+	  { 
+	  id:"8", 
+	  year:"1997", 
+	  cover:"covers/08 Transition Cover.webp", 
+	  title:"Transition", 
+	  text:"A short excursion into pure Berlin School within the program-music era, inspired by the Perry Rhodan science-fiction series, in which space travelers move through transitions to many distant worlds.\n\nTangerine Dream serves as the clear point of reference in sequencing and melodic structure.\n\nWhile all previous albums were recorded live in a single take without overdubs, *Transition* marks the first project produced using digital multitrack technology.",
+	  text2:"Composed, arranged and performed in 1997\n\nInstruments: Roland, Oberheim, Moog, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Kai Schliekelmann\nRemastered by Überschall", 
+	  yt:"https://youtu.be/VO0svdKeowQ", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"9", 
+	  year:"2000", 
+	  cover:"covers/09 Malmer Cover.webp", 
+	  title:"Malmer", 
+	  text:"The culmination of the program-music era, based on a narrative drawn from the Edda saga.\n\nWithout words, the music tells the story of how Thor gains his hammer. \nMyths, intrigue, legendary figures, and the mythical cauldron *Saftsieder* of the gods form the backdrop of this vividly imagined saga.\n\nA PDF containing the complete program is available for download below.",
+	  text2:"Composed, arranged and performed in 2000\n\nInstruments: Roland, Oberheim, Moog, Casio, AKAI, Dynacord, Ensoniq, Sennheiser Kunstkopf, PPG\n\nRecorded at Saturn 5 Studio\nKunstkopf-recording by \nIngo Schwarze\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/xEfKzYYK6k4", 
+	  pdf:"documents/Malmer 02.pdf"
+	  },
+	  
+	  { 
+	  id:"10", 
+	  year:"2001", 
+	  cover:"covers/10 Lichtnetz Cover.webp", 
+	  title:"Lichtnetz", 
+	  text:"One of the most unusual collaborations — driven less by long-term continuation than by the desire to draw impulses from each other’s musical worlds.\n\nThe method itself was extraordinary.\nA single project file was passed back and forth. With each exchange, the recipient was allowed to add only one track — a hi-hat, a bass line, a sequence — without altering anything else.\nThat music could emerge under such strict limitations, and remain listenable and coherent, is remarkable in itself.\nSingle Tracks:\nLichtnetz Part 1, Lichtnetz Part 2, Lichtnetz Part 3",
+	  text2:"Composed, arranged and performed in 2001\n\nInstruments Peter Dewald: Roland\nInstruments Ingo Schwarze: EMU\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/aM-UeP-zQFc", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"11", 
+	  year:"2002", 
+	  cover:"covers/11 Space Echo Cover.webp", 
+	  title:"Space Echo", 
+	  text:"Recorded in a single take, returning deliberately to Berlin School fundamentals.\n\nThe inspiration came less from the Roland tape delay *Space Echo* itself than from its name and the cult surrounding it.\n\nWhat we hear in our minds often differs from what reaches our ears. Expectations and reality rarely align — much like the myth of the *huge* sound of certain synthesizers that, once encountered, turn out far more modest.\n\nInstead a personal version of the *Space Echo* was programmed and is still in use till today.",
+	  text2:"Composed, arranged and performed in 2002\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",
+	  yt:"https://youtu.be/gcXFCLWRb8I", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"12", 
+	  year:"2003", 
+	  cover:"covers/12 SE2 Cover.webp", 
+	  title:"SE2", 
+	  text:"Emerging from a period centered on sound design and plugin development.\n\nThe track was produced and performed primarily with self-programmed instruments and effects.\n\nSpecial thanks to Jeff McClintock of SynthEdit. Many of these tools later appeared as releases under the Starplugs and EMS labels.",
+	  text2:"Composed, arranged and performed in 2003\n\nInstruments: Roland, Starplugs, EMS\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/-Ip3Y4khqVs", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"13", 
+	  year:"2014", 
+	  cover:"covers/13 Core of perception Cover.webp", 
+	  title:"Core Of Perception", 
+	  text:"A clear turning point.\nIt was the first release produced in 5.1 surround, and an absolute breakthrough. For the first time, music opened up as a physical space — not only to be heard, but to be felt. \n\nThis new spatial dimension changed the way of perceiving, enjoying, and composing music, and it demanded to be used musically rather than treated as a technical add-on.\n\nThe first track of the lyrical era, combining psychedelic, Berlin School, and electronic music with restrained vocals.",
+	  text2:"Composed, arranged and performed in 2014\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/osJ_uhtRNoM", 
+	  pdf:"documents/Core Of Perception.pdf" 
+	  },
+	  
+	  { 
+	  id:"14", 
+	  year:"2015", 
+	  cover:"covers/14 Strange days Cover.webp", 
+	  title:"Strange Days", 
+	  text:"Composed directly after *Core of Perception*, set aside for feeling too close to its predecessor.\n\nRediscovered 7 years later while archiving older works for the *Dark Matter Files*, it revealed itself as a relaxed, psychedelic surround composition — combining Berlin School structures with a deeply immersive spatial flow. \n\nAfter years forgotten in a drawer, it has since become the most successful release.",
+	  text2:"Composed, arranged and performed in 2015\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\n5.0 surround-ambient noise-recording by \nWolfgang Wackeldehne and Ulrich Kraft\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/80J9M4cZ2SI", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"15", 
+	  year:"2019", 
+	  cover:"covers/15 Out of the Void Cover.webp", 
+	  title:"Out Of The Void",
+	  text:"Continuing the lyrical era, this piece is based on a vivid dream, documented word for word in the accompanying PDF. \nThe text is meant literally — without metaphor or hidden meaning — following the raw logic of the dream itself — it was simply a surreal experience. \n\nPsychedelic textures meet electronic structures, realized in stereo, as releasing electronic music in surround was not feasible at the time.",
+	  text2:"Composed, arranged and performed in 2019\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",  
+	  yt:"https://youtu.be/N_zqzalS8MA", 
+	  pdf:"documents/Out Of The Void.pdf" 
+	  },
+	  
+	  { 
+	  id:"16", 
+	  year:"2020", 
+	  cover:"covers/16 The Road Movie Cover.webp", 
+	  title:"The Road Movie",
+	  text:"Centered on the moments before, during, and after entering a formula car.\nIt follows the experience of driving at the limit, staying on the line, and the quiet aftermath when you step out and take stock of yourself again.\n\n*A few seconds that feel like a lifetime.*\n\nPrimarily stereo, slightly more accessible than previous works — but only just. Surreal passages and psychedelic beats break through, keeping the experience firmly outside the ordinary.", 
+	  text2:"Composed, arranged and performed in 2020\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/YI_1UbEACVc", 
+	  pdf:"documents/The Road Movie.pdf" 
+	  },
+	  
+	  { 
+	  id:"17", 
+	  year:"2021", 
+	  cover:"covers/17 Lost Homeland Cover.webp", 
+	  title:"Lost Homeland", 
+	  text:"Composed in response to the flood disaster in the Ahr Valley — *my old home*.\n*When I first saw the images, there was a brief moment in which it felt as if this place had been lost forever.*\n\nThis piece is dedicated to all those affected —and to everyone who helped, endured, rebuilt, and kept going.\n\nIf you feel moved to do so, please consider supporting the established relief organizations.",
+	  text2:"Composed, arranged and performed in 2021\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",  
+	  yt:"https://youtu.be/oqdKjPFNPOo", 
+	  pdf:"documents/Lost Homeland.pdf" 
+	  },
+	  
+	  { 
+	  id:"18", 
+	  year:"2022", 
+	  cover:"covers/18 High Fly Cover.webp", 
+	  title:"High Fly", 
+	  text:"There are people who change your life with a single sentence, and who touch your soul again and again through their art.\n\n*One of those people in my life was Klaus Schulze.*\n\n*Even if I did not always follow his advice —\nto leave out the last beat, to trust the black keys, to remember that a good idea needs no more than four tracks.*\n\nCertainly he would have preferred a piece of music over any warm words.\n\nHear you again, Klaus",
+	  text2:"Composed, arranged and performed in 2022\n\nInstruments: Roland, Moog, EMS, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/4jiW0gnz8Vo", 
+	  pdf:"documents/High Fly.pdf" 
+	  },
+	  
+	  { 
+	  id:"19", 
+	  year:"2023", 
+	  cover:"covers/19 Gates of Jupiter Cover.webp", 
+	  title:"Gates Of Jupiter", 
+	  text:"Inspired by the idea of *A Space Odyssey*, not its music. The monolith plays a central role, both visually and conceptually.\n\nIt was the first surround production created with the clear intention of being released in that format on YouTube.\nElectro-dramatic and psychedelic — a surround statement.\n\n*Some pieces are best understood by listening.*",
+	  text2:"Composed, arranged and performed in 2023\n\nInstruments: Roland, Moog, PPG\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/Z1Ft1bUi_Bc", 
+	  pdf:"documents/Gates Of Jupiter.pdf" 
+	  },
+	  
+	  { 
+	  id:"20", 
+	  year:"2023", 
+	  cover:"covers/20 Beyond Cover.webp", 
+	  title:"Beyond", 
+	  text:"Framed by original mission communication from the 1970s, this piece reflects the Apollo 13 mission.\nRather than recounting events, the music focuses on the emotional state of the crew during the mission.\n\nAs with all releases, everything you hear is electronic — even what appears to be vocals is fully synthesized, guiding the listener through an electro-surround experience where tension, isolation, and resolve take precedence over narrative detail.",
+	  text2:"Composed, arranged and performed in 2023\n\nInstruments: Roland, Moog, PPG, Behringer\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/MWiLYE1y6wc", 
+	  pdf:"documents/Beyond.pdf" 
+	  },
+	  
+	  { 
+	  id:"21", 
+	  year:"2024", 
+	  cover:"covers/21 Helix Cover.webp", 
+	  title:"Helix", 
+	  text:"Conceived as a deeply immersive, psychedelic surround piece.\n\nHypnotic sequencing and rhythmic structures unfold in continuous motion, shaping a dense spatial experience.\n\nThe work celebrates the new Behringer synthesizer modules and embraces their sound with unmistakable nostalgia.",
+	  text2:"Composed, arranged and performed in 2024\n\nInstruments: Roland, Moog, PPG, Behringer\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",
+	  yt:"https://youtu.be/-mHJK5BlMWo", 
+	  pdf:null },
+	  
+	  { 
+	  id:"22", 
+	  year:"2025", 
+	  cover:"covers/22 Sea Of Silence Cover.webp", 
+	  title:"Sea Of Silence", 
+	  text:"A slow, relentless build across a wide surround space, shaped by constant tension. The piece pushes forward, layer by layer, until it rises into an infernal final passage.\n\nWhat remains is not release, but realization.\nIn moments where silence becomes physically present, it outweighs every sound.\n\n*Nothing is louder than silence.*",
+	  text2:"Composed, arranged and performed in 2025\n\nInstruments: Roland, Moog, PPG, Behringer\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall", 
+	  yt:"https://youtu.be/MICRBd398ME", 
+	  pdf:"documents/Sea Of Silence.pdf" 
+	  },
+	  
+	  { 
+	  id:"23", 
+	  year:"2025", 
+	  cover:"covers/23 The Fog Cover.webp", 
+	  title:"The Fog",
+	  text:"Inspired by Hermann Hesse’s Im Nebel, *The Fog* translates its atmosphere and inner state into a minimalist musical form.\n\nSparse structures and restrained motion drift beneath perception, shaped by distance and inner alienation.", 
+	  text2:"Composed, arranged and performed in 2025\n\nInstruments: Roland, Moog, PPG, Behringer\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",  
+	  yt:"https://youtu.be/OGcduKUGqbc", 
+	  pdf:"documents/The Fog.pdf" 
+	  },
+
+	  // später: hier die neuen Einträge ergänzen
+	];
+
+
+	// HOME — show latest cover (static)
+	(function setHomeLatestCover(){
+	  const img = document.getElementById("home-latest-cover");
+	  if (!img) return;
+
+	  // "letztes Cover" = höchstes id
+	  const latest = [...MUSIC_RELEASES].sort((a,b) => Number(b.id) - Number(a.id))[0];
+	  if (!latest || !latest.cover) return;
+
+	  img.src = latest.cover;
+	})();
+
+
+
+
+	/* ============================================================
+	   MUSIC — RAIL BUILDER (aus DATA)
+	   ============================================================ */
+
+	function buildMusicRailHTML(list){
+	  // Trenner-Jahre: „eigene Zeile zwischen Covern“
+	  // -> wir schreiben vor jedes Cover die Jahr-Zeile (wie bisher)
+	  
+		const ordered = [...list].sort((a, b) => Number(a.id) - Number(b.id));
+		return ordered.map(item => {
+	  
+		return `
+		  <button class="rail-item" type="button" data-id="${item.id}" data-index="">
+			<img class="rail-thumb" src="${item.cover}" alt="${item.title}">
+			<div class="rail-year">${item.year}</div>
+		  </button>
+		`;
+	  
+	  }).join("");
+	}
+
+
+	/* ============================================================
+	   MUSIC — MECHANIK (Live-Lupe + Commit)
+	   - Rail bewegt sich weich (Wheel/Trackpad)
+	   - Live: Farbe/Opacity sofort nach Nähe zur Mitte (Lupe)
+	   - Commit: nach Stillstand -> Stage/Text update (kein Flattern)
+	   - SETTLE_MS zentral (nur 1 Stelle zum Finetuning)
+	   ============================================================ */
+
+	(function initMusicRail(){
+	  const rail = document.getElementById("musicRail");
+	  if (!rail) return;
+
+	const inner = rail.querySelector(".music-rail-inner");
+	if (!inner) return;
+
+	/* Rail aus zentraler Liste bauen */
+	inner.innerHTML = buildMusicRailHTML(MUSIC_RELEASES);
+
+	/* Jetzt: Items/Thumbs neu einlesen (weil sie gerade erst erzeugt wurden) */
+	const items = Array.from(rail.querySelectorAll(".rail-item"));
+	items.forEach((b, i) => b.dataset.index = String(i));
+	const thumbs = items.map(b => b.querySelector(".rail-thumb"));
+
+	if (items.length === 0) return;
+
+	  const SETTLE_MS = 180;          // <<<<<< nur hier später finetunen
+	  const LIVE_RANGE_PX = 100;      // Lupe-Wirkbereich um die Mitte (px)
+
+
+
+	  const INTRO_MS = 2000;          // Startanimation-Dauer
+	  const FADE_MS  = 500;           // muss zu deinen CSS-Transitions passen
+	  let introRunning = false;
+
+
+
+
+	  // Grundwerte (passen zu deinem CSS-Konzept)
+	  const OP_MIN = 0.35;
+	  const OP_MAX = 1.00;
+
+
+
+
+
+
+
+
+
+
+	  // --- Position (horizontal) ---
+	  let x = 0;                 // aktueller translateX
+	  let targetX = 0;           // Ziel-translateX
+	  let rafId = null;
+	  let settleTimer = null;
+	  let lastCommitId = null;
+
+	  function clamp(v, lo, hi){
+		return Math.max(lo, Math.min(hi, v));
+	  }
+
+	  // Bounds so, dass erstes/letztes Item in die Mitte kann
+
+
+
+
+
+
+	function getBounds(){
+	  const railW = rail.clientWidth;
+
+	  // Snap-Linie = horizontales Zentrum des Menüs (in Rail-Koordinaten)
+	  // Fallback: Rail-Mitte, falls Menü nicht messbar ist
+	  let railCenter = railW / 2;
+	  const menu = document.querySelector(".menu");
+	  if (menu){
+		const mr = menu.getBoundingClientRect();
+		const rr = rail.getBoundingClientRect();
+		const menuCenterX = mr.left + mr.width / 2;		
+		railCenter = menuCenterX - rr.left;
+		
+		
+		// 1 Button nach links versetzen (ein Item-Abstand)
+		if (items.length > 1){
+		  const step = (items[1].offsetLeft - items[0].offsetLeft);
+		  railCenter -= step;
+		}		
+	  }
+
+
+
+
+
+
+
+
+
+
+	  const first = items[0];
+	  const last  = items[items.length - 1];
+
+	  const firstMid = first.offsetLeft + first.offsetWidth / 2;
+	  const lastMid  = last.offsetLeft  + last.offsetWidth  / 2;
+
+	  const maxX = railCenter - firstMid;
+	  const minX = railCenter - lastMid;
+
+	  return {minX, maxX, railW, railCenter};
+
+	}
+
+
+  // Stage-Snap: rechte Kante des großen Covers fluchtet mit rechter Kante des selektierten Rail-Covers
+  function updateStageSnap(){
+    const stage = document.querySelector("#page-music .music-stage");
+    if (!stage) return;
+
+    const b = getBounds();
+    const rr = rail.getBoundingClientRect();
+
+    const btn = items[snapIndex] || items[0];
+    if (!btn) return;
+
+    const itemW = btn.offsetWidth || 0;
+
+    // Viewport-X der rechten Kante des selektierten Rail-Covers
+    const anchorRightX = rr.left + b.railCenter + (itemW / 2);
+
+    document.documentElement.style.setProperty("--music-stage-left", `${anchorRightX}px`);
+	    // NEU: Viewport-X der linken Kante des selektierten Rail-Covers
+    const anchorLeftX = anchorRightX - itemW;
+    document.documentElement.style.setProperty("--music-stage-left-edge", `${anchorLeftX}px`);
+
+
+  }
+
+
+
+
+
+
+
+
+
+	  // Live-Lupe
+	  function applyLiveFocus(){
+		const {railCenter} = getBounds();
+		const railRect = rail.getBoundingClientRect();
+
+		for (let i = 0; i < items.length; i++){
+		  const img = thumbs[i];
+		  if (!img) continue;
+
+		  const rect = items[i].getBoundingClientRect();
+		  const mid = (rect.left - railRect.left) + rect.width / 2;
+		  const d = Math.abs(mid - railCenter);
+
+		  const t = clamp(1 - (d / LIVE_RANGE_PX), 0, 1);
+		  const g = 1 - t;
+		  const op = OP_MIN + (OP_MAX - OP_MIN) * t;
+
+		  img.style.filter = `grayscale(${g})`;
+		  img.style.opacity = `${op}`;
+		}
+	  }
+
+
+
+
+
+	  // Commit: nach Stillstand -> nächstes Item zur Mitte finden,
+	  // Stage/Text updaten (Daten aus MUSIC_RELEASES)
+	  function commitSelection(){
+		const {railCenter} = getBounds();
+		const railRect = rail.getBoundingClientRect();
+
+		let bestIdx = 0;
+		let bestDist = Infinity;
+
+		for (let i = 0; i < items.length; i++){
+		  const rect = items[i].getBoundingClientRect();
+		  const mid = (rect.left - railRect.left) + rect.width / 2;
+		  const d = Math.abs(mid - railCenter);
+		  if (d < bestDist){
+			bestDist = d;
+			bestIdx = i;
+		  }
+		}
+
+		snapIndex = bestIdx;
+        updateStageSnap();
+		const best = items[bestIdx];
+		const id = best.getAttribute("data-id") || "";
+
+		// Wenn nichts geändert: nicht ständig neu setzen
+		if (id && id === lastCommitId) return;
+		lastCommitId = id;
+
+		const bestId = Number(id);
+		const data = MUSIC_RELEASES.find(x => Number(x.id) === bestId);
+
+		// Stage-Cover Crossfade
+		const stage = document.querySelector("#page-music .music-stage");
+		if (stage){
+		  const current = stage.querySelector(".stage-cover");
+		  if (data && data.cover){
+			const img = document.createElement("img");
+			img.className = "stage-cover";
+			img.src = data.cover;
+			img.alt = data.title || "";
+			img.style.opacity = "0";
+			stage.appendChild(img);
+
+			requestAnimationFrame(() => {
+			  img.style.opacity = "1";
+			  if (current) current.style.opacity = "0";
+			});
+
+			// altes Bild nach Fade entfernen
+			setTimeout(() => {
+			  if (current && current.parentNode) current.parentNode.removeChild(current);
+			}, FADE_MS + 60);
+		  }
+		}
+
+
+
+
+
+
+
+
+		// Links: Textbox 1
+		const infoBox  = document.querySelector("#page-music .music-info");
+		const infoBox2 = document.querySelector("#page-music .music-info2");
+		if (infoBox)  infoBox.style.opacity  = "1";
+		if (infoBox2) infoBox2.style.opacity = "1";
+
+		// NEU: Höhe von Text1 an CSS geben (für Text2-Position unter Text1)
+		requestAnimationFrame(() => {
+		  const box = document.querySelector("#page-music .music-info");
+		  if (!box) return;
+		  const h = box.getBoundingClientRect().height || 0;
+		  document.documentElement.style.setProperty("--music-info-h", `${h}px`);
+		});
+
+		const t1 = document.querySelector("#page-music .music-info-title");
+		const b1 = document.querySelector("#page-music .music-info-body");
+
+		if (t1) t1.textContent = (data && data.title) ? data.title : "Demo Title";
+
+		if (b1){
+		  const raw = (data && data.text) ? data.text : "";
+		  const html = raw
+			.replace(/\n\n/g, '<span class="para-gap"></span>')
+			.replace(/\n/g, "<br>");
+		  b1.innerHTML = html;
+		}
+
+		// Rechts: Textbox 2
+		const t2 = document.querySelector("#page-music .music-info2-title");
+		const b2 = document.querySelector("#page-music .music-info2-body");
+		const l2 = document.querySelector("#page-music .music-info2 .music-info-links");
+
+		if (t2) t2.textContent = "";
+
+		if (b2){
+		  const raw2 = (data && data.text2) ? data.text2 : "";
+		  b2.innerHTML = raw2
+			.replace(/\n\n/g, '<span class="para-gap"></span>')
+			.replace(/\n/g, "<br>");
+		}
+
+		// Links unter Text2 füllen (Container sitzt unterhalb von .music-info2-body)
+		if (l2){
+		  l2.innerHTML = "";
+
+		  if (data && data.yt){
+			const a = document.createElement("a");
+			a.href = data.yt;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "Watch on YouTube";
+			l2.appendChild(a);
+		  }
+
+		  if (data && data.pdf){
+			const a = document.createElement("a");
+			a.href = data.pdf;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "PDF Download";
+			l2.appendChild(a);
+		  }
+		}
+	}
+
+
+
+
+
+
+	  let snapIndex = 0;
+
+	  function snapXForIndex(idx){
+		const {railCenter} = getBounds();
+		const btn = items[idx];
+		const mid = btn.offsetLeft + btn.offsetWidth / 2;
+		return railCenter - mid;
+	  }
+
+
+
+		function scheduleCommit(){
+		  if (settleTimer) clearTimeout(settleTimer);
+
+		  settleTimer = setTimeout(() => {
+			// Nur committen, wenn die Rail wirklich "steht"
+			if (Math.abs(targetX - x) < 0.6){
+			  commitSelection();
+			} else {
+			  // noch unterwegs -> erneut prüfen
+			  scheduleCommit();
+			}
+		  }, SETTLE_MS);
+		}
+
+
+
+
+	  function animate(){
+		x += (targetX - x) * 0.18;
+		if (Math.abs(targetX - x) < 0.2) x = targetX;
+
+		inner.style.transform = `translateX(${x}px)`;
+		applyLiveFocus();
+
+		rafId = requestAnimationFrame(animate);
+	  }
+
+	  function startAnim(){
+		if (rafId) return;
+		rafId = requestAnimationFrame(animate);
+	  }
+
+	  // Wheel/Trackpad — nur wenn Maus über Rail
+	  rail.addEventListener("wheel", (e) => {
+		if (introRunning) return;
+
+		e.preventDefault();
+
+		const dir = (e.deltaY > 0) ? -1 : 1;
+		snapIndex = clamp(snapIndex + dir, 0, items.length - 1);
+
+		const b = getBounds();
+		targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+		startAnim();
+		scheduleCommit();
+		updateStageSnap();
+
+		
+	  }, {passive:false});
+
+
+
+
+
+
+
+
+
+
+
+	// Click — Cover direkt in die Mitte fahren (intro nicht abbrechbar)
+	let __railBlockClick = false;
+
+	rail.addEventListener("click", (e) => {
+	  if (introRunning) return;
+	  if (__railBlockClick) return;
+
+	  const btn = e.target.closest(".rail-item");
+	  if (!btn || !rail.contains(btn)) return;
+
+	  const idx = Number(btn.dataset.index);
+	  if (!Number.isFinite(idx)) return;
+
+	  snapIndex = clamp(idx, 0, items.length - 1);
+	  
+		updateStageSnap();
+		
+	  const b = getBounds();
+	  targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+	  startAnim();
+	  scheduleCommit();
+	});
+
+
+	// Swipe/Drag (Touch/iPad) — Pointer Events
+	rail.style.touchAction = "none";
+
+	let __ptrDown = false;
+	let __ptrId = null;
+	let __ptrStartX = 0;
+	let __ptrStartTarget = 0;
+	let __ptrMoved = 0;
+	let __ptrType = "mouse";
+
+
+	function __findClosestIndex(){
+	  const {railCenter} = getBounds();
+	  const railRect = rail.getBoundingClientRect();
+
+	  let bestIdx = 0;
+	  let bestDist = Infinity;
+
+	  for (let i = 0; i < items.length; i++){
+		const rect = items[i].getBoundingClientRect();
+		const mid = (rect.left - railRect.left) + rect.width / 2;
+		const d = Math.abs(mid - railCenter);
+		if (d < bestDist){
+		  bestDist = d;
+		  bestIdx = i;
+		}
+	  }
+	  return bestIdx;
+	}
+
+	rail.addEventListener("pointerdown", (e) => {
+	  if (introRunning) return;
+	  if (e.button !== undefined && e.button !== 0) return;
+
+	  // Mouse soll weiter normal klicken können (keine preventDefault / kein Capture)
+	  if (e.pointerType === "mouse") return;
+
+	  __ptrType = e.pointerType || "touch";
+	  __ptrDown = true;
+	  __ptrId = e.pointerId;
+	  __ptrStartX = e.clientX;
+	  __ptrStartTarget = targetX;
+	  __ptrMoved = 0;
+
+	  try { rail.setPointerCapture(__ptrId); } catch(_){}
+
+	  e.preventDefault();
+	}, {passive:false});
+
+
+	rail.addEventListener("pointermove", (e) => {
+	  if (!__ptrDown) return;
+	  if (__ptrId !== null && e.pointerId !== __ptrId) return;
+	  if (__ptrType === "mouse") return;
+
+
+	  const dx = e.clientX - __ptrStartX;
+	  __ptrMoved = Math.max(__ptrMoved, Math.abs(dx));
+
+	  const b = getBounds();
+	  targetX = clamp(__ptrStartTarget + dx, b.minX, b.maxX);
+
+	  startAnim();
+	  scheduleCommit();
+
+	  e.preventDefault();
+	}, {passive:false});
+
+	function __endPointer(e){
+	  if (!__ptrDown) return;
+	  if (__ptrId !== null && e.pointerId !== __ptrId) return;
+
+	  __ptrDown = false;
+
+	  // Wenn wirklich gewischt wurde: Click danach blocken
+	  if (__ptrMoved > 6){
+		__railBlockClick = true;
+		setTimeout(() => { __railBlockClick = false; }, 0);
+	  }
+
+	  // Snap auf nächsten Index
+	  snapIndex = __findClosestIndex();
+	  const b = getBounds();
+	  targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+	  startAnim();
+	  scheduleCommit();
+
+	  __ptrId = null;
+
+	  e.preventDefault();
+	}
+
+	rail.addEventListener("pointerup", __endPointer, {passive:false});
+	rail.addEventListener("pointercancel", __endPointer, {passive:false});
+	rail.addEventListener("lostpointercapture", __endPointer, {passive:false});
+
+
+
+
+	// Fallback: Touch Events (falls PointerEvents nicht verfügbar)
+	if (!("PointerEvent" in window)) {
+	  let __tDown = false;
+	  let __tStartX = 0;
+	  let __tStartTarget = 0;
+	  let __tMoved = 0;
+
+	  function __touchClientX(ev){
+		const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]);
+		return t ? t.clientX : 0;
+	  }
+
+	  rail.addEventListener("touchstart", (e) => {
+		if (introRunning) return;
+
+		__tDown = true;
+		__tStartX = __touchClientX(e);
+		__tStartTarget = targetX;
+		__tMoved = 0;
+
+		e.preventDefault();
+	  }, {passive:false});
+
+	  rail.addEventListener("touchmove", (e) => {
+		if (!__tDown) return;
+
+		const xNow = __touchClientX(e);
+		const dx = xNow - __tStartX;
+		__tMoved = Math.max(__tMoved, Math.abs(dx));
+
+		const b = getBounds();
+		targetX = clamp(__tStartTarget + dx, b.minX, b.maxX);
+
+		startAnim();
+		scheduleCommit();
+
+		e.preventDefault();
+	  }, {passive:false});
+
+	  rail.addEventListener("touchend", (e) => {
+		if (!__tDown) return;
+		__tDown = false;
+
+		if (__tMoved > 6){
+		  __railBlockClick = true;
+		  setTimeout(() => { __railBlockClick = false; }, 0);
+		}
+
+		snapIndex = __findClosestIndex();
+		const b = getBounds();
+		targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+		startAnim();
+		scheduleCommit();
+
+		e.preventDefault();
+	  }, {passive:false});
+
+	  rail.addEventListener("touchcancel", (e) => {
+		if (!__tDown) return;
+		__tDown = false;
+
+		snapIndex = __findClosestIndex();
+		const b = getBounds();
+		targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+		startAnim();
+		scheduleCommit();
+
+		e.preventDefault();
+	  }, {passive:false});
+	}
+
+
+
+
+
+
+
+
+	  
+	  
+	  // Resize: Snap-Position exakt halten (selected bleibt unter Music-Button)
+	  function resnapToSelected(){
+		const b = getBounds();
+		const nx = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+		x = nx;
+		targetX = nx;
+
+		inner.style.transform = `translateX(${x}px)`;
+		applyLiveFocus();
+		updateStageSnap();
+
+	  }
+
+	  window.addEventListener("resize", () => {
+		// Layout erst finalisieren lassen, dann snap neu berechnen
+		requestAnimationFrame(resnapToSelected);
+	  });
+		  
+	   updateStageSnap();
+	  
+	  
+	  
+	  inner.style.willChange = "transform";
+	  inner.style.transform = `translateX(${x}px)`;
+
+	  startAnim();
+	  scheduleCommit();
+
+
+
+	/* ============================================================
+	   MUSIC — INTRO: startet bei Aktivierung der Music-Seite
+	   - Stage/Text zuerst leer/unsichtbar
+	   - Rail startet unten (letzter Eintrag) und fährt automatisch nach oben
+	   - danach Commit auf ersten Eintrag (Stage/Text füllen)
+	   ============================================================ */
+
+	function easeInOutQuad(t){
+	  return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+	}
+
+	function runMusicIntro(){
+	  if (introRunning) return;
+	  introRunning = true;
+	  lastCommitId = null;
+
+
+	  const page = document.getElementById("page-music");
+	  const stage = document.querySelector("#page-music .music-stage");
+	  const infoBox = document.querySelector("#page-music .music-info");
+	  const infoTitle = document.querySelector("#page-music .music-info-title");
+	  const infoBody  = document.querySelector("#page-music .music-info-body");
+	  const infoBox2   = document.querySelector("#page-music .music-info2");
+	  const infoTitle2 = document.querySelector("#page-music .music-info2-title");
+	  const infoBody2  = document.querySelector("#page-music .music-info2-body");
+
+
+	  // 1) Mitte leeren/ausblenden
+	  if (stage){
+		stage.style.opacity = "0";
+		// alte Stage-Bilder entfernen
+		stage.querySelectorAll(".stage-cover").forEach(n => n.remove());
+	  }
+	  if (infoBox){
+		infoBox.style.opacity = "0";
+	  }
+	  if (infoTitle) infoTitle.textContent = "";
+	  if (infoBody)  infoBody.innerHTML = "";
+	  
+	  if (infoBox2){
+		infoBox2.style.opacity = "0";
+		}
+		if (infoTitle2) infoTitle2.textContent = "";
+		if (infoBody2)  infoBody2.innerHTML = "";
+
+
+
+
+
+	  // 2) Rail auf ERSTEN Eintrag setzen (ältestes links)
+	  snapIndex = 0;
+	  const b0 = getBounds();
+	  const startX = clamp(snapXForIndex(snapIndex), b0.minX, b0.maxX);
+	  x = startX;
+	  targetX = startX;
+	  inner.style.transform = `translateX(${x}px)`;
+
+	  // 3) Autoscroll zum LETZTEN Eintrag (neuestes rechts) (nicht abbrechbar)
+	  snapIndex = items.length - 1;
+	  const b1 = getBounds();
+	  const endX = clamp(snapXForIndex(snapIndex), b1.minX, b1.maxX);
+
+	  const t0 = performance.now();
+
+	  function step(now){
+		const t = clamp((now - t0) / INTRO_MS, 0, 1);
+		const k = easeInOutQuad(t);
+
+		const v = startX + (endX - startX) * k;
+
+		// wichtig: animate() schreibt ebenfalls transform -> x synchron halten
+		x = v;
+		targetX = v;
+
+		inner.style.transform = `translateX(${v}px)`;
+
+		applyLiveFocus();
+
+		if (t < 1){
+		  requestAnimationFrame(step);
+		} else {
+		
+			  // Hard Snap auf exakten Endwert (eliminiert das End-Zucken)
+			  x = endX;
+			  targetX = endX;
+			  inner.style.transform = `translateX(${endX}px)`;
+			  applyLiveFocus();
+				
+		
+		
+		
+		  // 4) Stage wieder sichtbar, dann Commit (mit kurzem Delay)
+		  if (stage) stage.style.opacity = "1";
+		  if (infoBox) infoBox.style.opacity = "0";
+
+		  setTimeout(() => {
+			commitSelection();      // baut Stage/Text wieder auf
+			introRunning = false;   // ab hier wieder normale Bedienung
+		  }, 50);
+		}
+	  }
+
+
+
+
+
+
+
+
+
+	  requestAnimationFrame(step);
+	}
+
+	// Observer: startet Intro, sobald #page-music "active" wird
+	(function watchMusicActive(){
+	  const page = document.getElementById("page-music");
+	  if (!page) return;
+
+	  let wasActive = page.classList.contains("active");
+
+	  const obs = new MutationObserver(() => {
+		const isActive = page.classList.contains("active");
+		if (isActive && !wasActive){
+		  runMusicIntro();
+		}
+		wasActive = isActive;
+	  });
+
+	  obs.observe(page, { attributes: true, attributeFilter: ["class"] });
+	})();
+
+
+	// DEBUG: show viewport size
+	(function viewportDebug(){
+	  const el = document.getElementById("viewport-debug");
+	  if (!el) return;
+
+	  function update(){
+		el.textContent = `${window.innerWidth} × ${window.innerHeight}`;
+	  }
+
+	  window.addEventListener("resize", update);
+	  update(); // initial
+	})();
+
+
+
+
+	})();
+
+
+
+	// Startzustand (defensiv)
+	activatePage('home', '#ff0000');
+
+
+	
+	
+	
+	
+  </script>
+</body>
+</html>
