@@ -61,6 +61,7 @@
       --logo-height: clamp(170px, 23.6vw, 300px);  /* kontinuierlich: min=170, max=300 */
 
 		--safe-bottom: env(safe-area-inset-bottom);
+		--ios-bottom-fudge: 0px;
 
 
       --logo-transition-ms: 1200ms;   /* weicher Farbwechsel */
@@ -152,6 +153,19 @@
 
 
     }
+	
+	
+	
+	@supports (-webkit-touch-callout: none) {
+	  :root{
+		--ios-bottom-fudge: 24px; /* iOS extra, gegen "½ Zeile" Bounce */
+	  }
+	}
+	
+	
+	
+	
+	
 
     /* ============================================================
        1) PAGE BASE
@@ -1790,6 +1804,13 @@
 			) || 0;
 		  
 
+		const iosFudge = parseFloat(
+		  getComputedStyle(document.documentElement).getPropertyValue("--ios-bottom-fudge")
+		) || 0;
+
+
+
+
 		  // Alles, was bei dir absolut steht und "unten" relevant ist
 		  const parts = [
 			document.querySelector("#page-music .music-stage"),
@@ -1807,7 +1828,10 @@
 
 			
 			const PAD = 40; // bleibt erstmal
-			const targetHeight = Math.max(scroll.clientHeight, maxBottom + PAD + safeBottom);
+			const targetHeight = Math.max(scroll.clientHeight, maxBottom + PAD + safeBottom + iosFudge);
+			
+			
+			
 			spacer.style.height = `${Math.ceil(targetHeight)}px`;
 
 			
