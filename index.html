@@ -253,6 +253,10 @@
 	  color: var(--typo-button-color);
 	}
 
+	.para-gap{
+	  display: block;
+	  height: 14px;
+	}
 
 
 
@@ -488,11 +492,9 @@
 
 	  /* kein Layout-Shift durch Scrollbar */
 	  scrollbar-gutter: stable;
-	  
-	  
 	}
 
-	
+
 
 
 
@@ -748,11 +750,6 @@
 	  font-size: var(--typo-text-size);
 	  font-weight: var(--typo-text-weight);
 	  line-height: var(--typo-text-lineheight);
-		  .para-gap{
-			display:block;
-			height: 14px;
-		  }
-	  
 	}
 	
 #page-music .music-info-links{
@@ -821,11 +818,6 @@
 	  font-size: var(--typo-text-size);
 	  font-weight: var(--typo-text-weight);
 	  line-height: var(--typo-text-lineheight);
-		.para-gap{
-		  display: block;
-		  height: 14px;
-		}
-	  
 	}
 		
 
@@ -1163,9 +1155,7 @@
     </div>
 
     <!-- Reserve/Platz für zukünftige Inhalte unterhalb des Viewports -->
-	<div class="music-scroll-spacer"></div>
-
-
+    <div class="music-scroll-spacer"></div>
 
   </div>
    
@@ -1904,47 +1894,6 @@
 			l2.appendChild(a);
 		  }
 		}
-		
-		
-		
-		
-		// ---- Spacer-Höhe automatisch: nur so viel wie nötig (0…)
-		// verhindert Scrollbar "überall" und verhindert iPad-Cutoff unten
-		(function updateMusicSpacer(){
-		  const scroll = document.querySelector("#page-music .music-scroll");
-		  const spacer = document.querySelector("#page-music .music-scroll-spacer");
-		  if (!scroll || !spacer) return;
-
-		  // Elemente, die bei dir absolut positioniert sind und "unten" zählen
-		  const parts = [
-			document.querySelector("#page-music .music-stage"),
-			document.querySelector("#page-music .music-info"),
-			document.querySelector("#page-music .music-info2")
-		  ].filter(Boolean);
-
-		  const scrollRect = scroll.getBoundingClientRect();
-
-		  // tiefster sichtbarer Punkt (Bottom) innerhalb des Scroll-Containers
-		  let maxBottom = 0;
-		  for (const el of parts){
-			const r = el.getBoundingClientRect();
-			const bottomInScroll = (r.bottom - scrollRect.top) + scroll.scrollTop;
-			if (bottomInScroll > maxBottom) maxBottom = bottomInScroll;
-		  }
-
-		  const PAD = 80; // gewünschte Luft unten (20–80 nach Geschmack)
-		  const needed = Math.max(0, (maxBottom + PAD) - (scroll.clientHeight + scroll.scrollTop));
-
-		  spacer.style.height = `${Math.ceil(needed)}px`;
-		})();
-				
-		
-		
-		
-		
-		
-		
-		
 	}
 
 
