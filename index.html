@@ -1616,6 +1616,15 @@
 
 	/* Rail aus zentraler Liste bauen */
 	inner.innerHTML = buildMusicRailHTML(MUSIC_RELEASES);
+	
+	// Initial: Spacer einmal setzen (damit Startzustand nicht "0 Luft" ist)
+	requestAnimationFrame(() => {
+	  updateMusicScrollSpacer();
+	  requestAnimationFrame(updateMusicScrollSpacer);
+	});
+		
+	
+	
 
 	/* Jetzt: Items/Thumbs neu einlesen (weil sie gerade erst erzeugt wurden) */
 	const items = Array.from(rail.querySelectorAll(".rail-item"));
@@ -1769,6 +1778,44 @@
 
 
 
+
+		function updateMusicScrollSpacer(){
+		  const scroll = document.querySelector("#page-music .music-scroll");
+		  const spacer = document.querySelector("#page-music .music-scroll-spacer");
+		  if (!scroll || !spacer) return;
+
+		  // Alles, was bei dir absolut steht und "unten" relevant ist
+		  const parts = [
+			document.querySelector("#page-music .music-stage"),
+			document.querySelector("#page-music .music-info"),
+			document.querySelector("#page-music .music-info2")
+		  ].filter(Boolean);
+
+		  // tiefster Punkt im Scroll-Container (robust für absolute Elemente)
+		  let maxBottom = 0;
+		  for (const el of parts){
+			const b = (el.offsetTop || 0) + (el.offsetHeight || 0);
+			if (b > maxBottom) maxBottom = b;
+		  }
+
+			const PAD = 40; // Luft unten (20..80)
+
+			// Ziel: Scrollhöhe = max(viewportHöhe, tiefster Inhalt + PAD)
+			// weil der Spacer bei 0 startet und die komplette Flow-Höhe definiert.
+			const targetHeight = Math.max(scroll.clientHeight, maxBottom + PAD);
+
+			spacer.style.height = `${Math.ceil(targetHeight)}px`;
+
+		}
+
+
+
+
+
+
+
+
+
 	  // Commit: nach Stillstand -> nächstes Item zur Mitte finden,
 	  // Stage/Text updaten (Daten aus MUSIC_RELEASES)
 	  function commitSelection(){
@@ -1811,6 +1858,15 @@
 			img.alt = data.title || "";
 			img.style.opacity = "0";
 			stage.appendChild(img);
+
+			// Spacer nach Bild-Load aktualisieren (wichtig für korrekte Höhe)
+			img.addEventListener("load", () => {
+			  updateMusicScrollSpacer();
+			  requestAnimationFrame(updateMusicScrollSpacer);
+			});
+
+
+
 
 			requestAnimationFrame(() => {
 			  img.style.opacity = "1";
@@ -2356,6 +2412,15 @@
 	  update(); // initial
 	})();
 
+
+	// Spacer nach allen DOM-Updates aktualisieren (1–2 Frames später = iPad-sicher)
+	requestAnimationFrame(() => {
+	  updateMusicScrollSpacer();
+	  requestAnimationFrame(updateMusicScrollSpacer);
+	});
+	
+	window.addEventListener("resize", () => requestAnimationFrame(updateMusicScrollSpacer));
+	window.addEventListener("orientationchange", () => requestAnimationFrame(updateMusicScrollSpacer));
 
 
 
