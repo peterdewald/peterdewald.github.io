@@ -60,6 +60,7 @@
 
       --logo-height: clamp(170px, 23.6vw, 300px);  /* kontinuierlich: min=170, max=300 */
 
+		--safe-bottom: env(safe-area-inset-bottom);
 
 
       --logo-transition-ms: 1200ms;   /* weicher Farbwechsel */
@@ -1783,6 +1784,11 @@
 		  const scroll = document.querySelector("#page-music .music-scroll");
 		  const spacer = document.querySelector("#page-music .music-scroll-spacer");
 		  if (!scroll || !spacer) return;
+		  
+			const safeBottom = parseFloat(
+			  getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom")
+			) || 0;
+		  
 
 		  // Alles, was bei dir absolut steht und "unten" relevant ist
 		  const parts = [
@@ -1798,13 +1804,17 @@
 			if (b > maxBottom) maxBottom = b;
 		  }
 
-			const PAD = 40; // Luft unten (20..80)
 
-			// Ziel: Scrollhöhe = max(viewportHöhe, tiefster Inhalt + PAD)
-			// weil der Spacer bei 0 startet und die komplette Flow-Höhe definiert.
-			const targetHeight = Math.max(scroll.clientHeight, maxBottom + PAD);
-
+			
+			const PAD = 40; // bleibt erstmal
+			const targetHeight = Math.max(scroll.clientHeight, maxBottom + PAD + safeBottom);
 			spacer.style.height = `${Math.ceil(targetHeight)}px`;
+
+			
+			
+			
+			
+			
 
 		}
 
