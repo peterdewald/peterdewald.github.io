@@ -2046,25 +2046,63 @@
 	  }
 
 	  // Wheel/Trackpad — nur wenn Maus über Rail
-	  rail.addEventListener("wheel", (e) => {
-		if (introRunning) return;
+		// Wheel/Trackpad — Mauswheel: wie vorher (snap) | Trackpad: weich + snap nach Stillstand
+		rail.addEventListener("wheel", (e) => {
+		  if (introRunning) return;
+		  e.preventDefault();
 
-		e.preventDefault();
+		  const dx = e.deltaX || 0;
+		  const dy = e.deltaY || 0;
 
-		const dir = (e.deltaY > 0) ? -1 : 1;
-		snapIndex = clamp(snapIndex + dir, 0, items.length - 1);
+		  // ------------------------------------------------------------
+		  // Klassifizierung:
+		  // Trackpad liefert meist kleine, feine Werte (und/oder deltaX != 0).
+		  // Mauswheel liefert meist große Schritte (dy ~ 50..120..).
+		  // ------------------------------------------------------------
+		  const isTrackpad =
+			(Math.abs(dx) > 0) || (Math.abs(dy) < 25);
 
-		const b = getBounds();
-		targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+		  // ============================================================
+		  // A) TRACKPAD: weich, horizontal bevorzugt, am Ende snap
+		  // ============================================================
+		  if (isTrackpad) {
+			const raw = (Math.abs(dx) > Math.abs(dy)) ? dx : dy;
 
-		startAnim();
-		scheduleCommit();
-		updateStageSnap();
+			const SPEED = 0.55; // 0.35..0.80
+			const b = getBounds();
 
-		
-	  }, {passive:false});
+			// Richtung: "nach links wischen" => ältere Covers (links)
+			targetX = clamp(targetX - (raw * SPEED), b.minX, b.maxX);
 
+			startAnim();
+			updateStageSnap();
 
+			clearTimeout(rail._tpSnapTimer);
+			rail._tpSnapTimer = setTimeout(() => {
+			  snapIndex = __findClosestIndex();
+			  targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+			  startAnim();
+			  scheduleCommit();
+			  updateStageSnap();
+			}, 120);
+
+			return;
+		  }
+
+		  // ============================================================
+		  // B) MAUSWHEEL: EXAKT WIE DEIN UPLOAD (snapIndex +/- 1)
+		  // ============================================================
+		  const dir = (dy > 0) ? -1 : 1;
+		  snapIndex = clamp(snapIndex + dir, 0, items.length - 1);
+
+		  const b = getBounds();
+		  targetX = clamp(snapXForIndex(snapIndex), b.minX, b.maxX);
+
+		  startAnim();
+		  scheduleCommit();
+		  updateStageSnap();
+
+		}, {passive:false});
 
 
 
