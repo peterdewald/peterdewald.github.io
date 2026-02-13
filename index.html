@@ -1877,6 +1877,17 @@
 		// Wenn nichts geändert: nicht ständig neu setzen
 		if (id && id === lastCommitId) return;
 		lastCommitId = id;
+		
+		// NEW: bei neuem Cover weich nach oben scrollen
+		const musicScroll = document.querySelector("#page-music .music-scroll");
+		if (musicScroll){
+		  musicScroll.scrollTo({
+			top: 0,
+			behavior: "smooth"
+		  });
+		}
+		
+		
 
 		const bestId = Number(id);
 		const data = MUSIC_RELEASES.find(x => Number(x.id) === bestId);
