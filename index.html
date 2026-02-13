@@ -568,17 +568,35 @@
 	}
 
 	/* Center-Marker: zeigt die "Mitte" der Rail */
-	#page-music .music-rail::after{
-	  content: "";
-	  position: absolute;
-	  top: 10%;
-	  bottom: 10%;
-	  left: 50%;
-	  width: 1px;
-	  transform: translateX(-50%);
-	  background: transparent;
-	  pointer-events: none;
-	}
+
+
+		/* Selection-Frame: feststehender Rahmen über der Rail */
+		#page-music .music-rail::after{
+		  content: "";
+		  position: absolute;
+
+		  /* exakt auf der Selection-Linie (Rail-Mitte) */
+			left: var(--music-rail-frame-x, 50%);
+		  top: 0;
+
+		  /* Rahmen-Größe = Cover-Größe */
+		  width: var(--music-rail-width);
+		  height: var(--music-rail-width);
+
+		  transform: translateX(-50%);
+
+		  /* Optik wie Menu-Button */
+		  border: 1px solid rgba(255,255,255,0.60);
+		  box-sizing: border-box;
+		  background: rgba(0,0,0,0.00);
+
+		  /* optional: leichter Glow für Sichtbarkeit */
+		  box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+
+		  pointer-events: none;
+		  z-index: 5; /* über Thumbs */
+		}
+
 
 	/* Jahreszahl-Zeilen */
 	#page-music .rail-year{
@@ -1712,6 +1730,8 @@
 		}		
 	  }
 
+		// CSS: Selection-Frame exakt auf die Rail-Center-Linie setzen (Menu "Music")
+		document.documentElement.style.setProperty("--music-rail-frame-x", `${railCenter}px`);
 
 
 
