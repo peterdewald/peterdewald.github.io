@@ -52,6 +52,18 @@
 		--logo-optical-shift: calc(var(--logo-height) * 0.12);
 		
 		--menu-h: 90px; /* Menu-Höhe (Button 90x90 inkl. Rahmen) */
+		
+		--home-anchor-x: 50vw;
+
+
+		/* HOME: rechte Kante = rechte Kante des Home-Buttons
+		   (Home ist Button #1, rechts davon stehen 4 Buttons) */
+		--home-btn-right: calc(
+		  var(--menu-right) + (4 * (var(--menu-h) + var(--menu-gap)))
+		);
+
+
+
 
     
 	  --logo-left: clamp(4vw, 4.5vw, 5vw);     /* weich: 4vw ↔ 5vw */
@@ -133,19 +145,75 @@
 
 	/* DEBUG: Viewport size (temporary) */
 	#viewport-debug{
-	  position: fixed;
-	  top: 8px;
-	  left: 8px;
-	  z-index: 2;              /* über Video/Scrim, unter Menü */
-	  padding: 6px 8px;
-	  font-family: var(--font);
-	  font-size: 12px;
-	  line-height: 1;
-	  color: #ffffff;
-	  background: rgba(0,0,0,0.45);
-	  border-radius: 6px;
-	  pointer-events: none;    /* nie klickbar */
+		  display: none;
+		  position: fixed;
+		  z-index: 50;
+
+		  width: 90px;
+		  height: 20px;
+
+		  box-sizing: border-box;
+
+		  font-family: var(--font);
+		  font-size: 11px;
+		  line-height: 20px;
+		  text-align: center;
+
+		  color: #ffffff;
+
+		  background: transparent;
+		  border: 1px solid rgba(255,255,255,0.6);
+		  border-radius: 0;
+
+		  pointer-events: none;
+		}
+
+
+
+
+
+	body.is-contact #viewport-debug{
+	  display: block;
+
+	  /* unter dem Menü */
+	  top: calc(var(--menu-top) + var(--menu-h) + 20px);
+
+	  /* rechtsbündig am Menü */
+	  right: var(--menu-right);
 	}
+
+
+
+
+
+#viewport-debug{
+  display: none;
+  position: fixed;
+  z-index: 50;
+
+  width: 90px;
+  height: 20px;
+
+  box-sizing: border-box;
+
+  font-family: var(--font);
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+
+  color: #ffffff;
+
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 0;
+
+  pointer-events: none;
+}
+
+
+
+
+
 
 
 
@@ -298,6 +366,27 @@
 	  :root{
 		--menu-top: 130px; /* 20px + 90px */
 	  }
+	  
+		 /* HOME: ab 1050px linke Kante am Home-Button (echter px-Anker) */
+
+#page-home .home-scroll h1,
+#page-home h1{
+  left: var(--home-btn-right-x, 0px);
+  right: 20px;
+  width: auto;
+
+  text-align: left;
+  margin: 0;
+  white-space: normal;
+}
+
+
+
+		  #page-home #home-latest-cover{
+			right: auto;
+			left: var(--home-btn-right-x, 0px);
+		  }
+	  
 	}
 
 
@@ -875,29 +964,29 @@
 
 
 
-/* HOME — Scroll-Container unterhalb des Menus */
-#page-home .home-scroll{
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--menu-top) + var(--menu-h));
-  bottom: 0;
+	/* HOME — Scroll-Container unterhalb des Menus */
+	#page-home .home-scroll{
 
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+	position: absolute;          /* bleibt */
+	left: 0;
+	right: 0;
+	top: calc(var(--menu-top) + var(--menu-h));
+	bottom: 0;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+	overflow-y: auto;
+	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
 
-  padding-top: 150px;   /* entspricht deinem bisherigen Home-Offset */
-  padding-bottom: 25vh; /* Reserve, damit Cover immer erreichbar bleibt */
+	box-sizing: border-box;
 
-  box-sizing: border-box;
-  text-align: center;
-}
+	/* NEU: als Positionierungs-Container */
+	display: block;
+	padding: 0;
+	
+	/* kein Layout-Shift durch Scrollbar */
+	scrollbar-gutter: stable;
+
+	}
 
 
 
@@ -920,32 +1009,30 @@
 
 
 
-#home-latest-cover{
-  position: relative;
-  left: auto;
-  top: auto;
-  transform: none;
+	#home-latest-cover{
+	  position: absolute;
+	  left: auto;
 
-  margin-top: 80px;
-  width: 350px;
-  opacity: 0.5;
+	  top: auto;
+	  transform: none;
 
-  filter: grayscale(1);
-  image-rendering: auto;
+	  margin-top: 80px;
+	  width: 440px;
+	  opacity: 0.5;
 
-  pointer-events: auto;
-  cursor: pointer;
+	  filter: grayscale(1);
+	  image-rendering: auto;
 
-  z-index: 2;
-}
+	  pointer-events: auto;
+	  cursor: pointer;
 
+	  z-index: 2;
+	}
 
-
-
-	
 	
 	/* HOME latest cover — animation states */
 	#home-latest-cover{
+		right: var(--home-btn-right);
 	  transition:
 		opacity 25s linear,
 		width 25s linear;
@@ -953,7 +1040,7 @@
 
 	#home-latest-cover.is-init{
 	  opacity: 0;
-	  width: 250px;
+	  width: 340px;
 	}
 	
 	
@@ -977,6 +1064,31 @@
     }
 
 
+	/* HOME: Text rechts am Home-Button, 20px unter Button */
+	#page-home .home-scroll h1{
+	  position: absolute;
+	  top: 20px; /* 20px unterhalb von home-scroll top (das ist bereits unter dem Menu) */
+
+	  /* rechte Kante am Home-Button */
+	right: calc(var(--home-btn-right) - 15px);
+
+
+	  margin: 0;
+	  text-align: right;
+	}
+
+	/* HOME: Cover 20px unter Text, rechte Kante am Home-Button */
+	#page-home #home-latest-cover{
+	  position: absolute;
+
+right: calc(var(--home-btn-right) - 15px);
+
+
+	  /* 20px unter Text: wir nehmen die reale Text-Höhe per JS im nächsten Schritt */
+	  top: calc(20px + var(--home-h1-h, 0px) + 20px);
+
+	  margin: 0;
+	}
 
 
 
@@ -1056,7 +1168,19 @@
 }
 	
 	
-	
+	@media (max-width: 1050px){
+  #page-home .home-scroll h1{
+    left: var(--home-btn-right-x, 0px);
+    right: 20px;
+    width: auto !important;          /* wichtig: NICHT 200px */
+    max-width: none;
+
+    text-align: left !important;     /* gewinnt gegen center-Regeln */
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
 	
 	
 	
@@ -1218,6 +1342,21 @@
     const menuButtons = document.querySelectorAll('.menu button');
     const pages = document.querySelectorAll('.page');
 
+
+
+	// HOME: Menu-Button "Home" als Anker (left/right in px)
+	function updateHomeButtonAnchors(){
+	  const btn = document.querySelector('.menu button[data-page="home"]');
+	  if (!btn) return;
+	  const r = btn.getBoundingClientRect();
+	  root.style.setProperty("--home-btn-left-x",  `${r.left}px`);
+	  root.style.setProperty("--home-btn-right-x", `${r.right}px`);
+	}
+	window.addEventListener("resize", () => requestAnimationFrame(updateHomeButtonAnchors));
+
+
+
+
     // ------------------------------------------------------------
     // 2) Hilfsfunktion: Seite aktivieren
     // ------------------------------------------------------------
@@ -1261,6 +1400,28 @@
 
       if (target) target.classList.add('active');
 	  
+		if (pageKey === "home") requestAnimationFrame(updateHomeButtonAnchors);
+
+	  
+	  
+		// HOME: Anker-X = rechte Kante des Home-Buttons (Viewport-Pixel)
+		if (pageKey === "home"){
+		  const homeBtn = document.querySelector('.menu button[data-page="home"]');
+		  if (homeBtn){
+			const r = homeBtn.getBoundingClientRect();
+			document.documentElement.style.setProperty("--home-anchor-right", `${r.right}px`);
+		  }
+		}
+			  
+		// HOME: Text-Höhe messen, damit Cover 20px darunter sitzt
+		requestAnimationFrame(() => {
+		  const h1 = document.querySelector("#page-home .home-scroll h1");
+		  if (!h1) return;
+		  document.documentElement.style.setProperty("--home-h1-h", `${h1.offsetHeight}px`);
+		});
+	  
+	  
+		document.body.classList.toggle("is-contact", pageKey === "contact");
 	  
 		// NEU: beim Seitenwechsel immer nach oben
 		const scroller = document.querySelector('.content');
@@ -1295,7 +1456,7 @@
 	  if (pageKey === "home"){
 		homeCover._homeTimer = setTimeout(() => {
 		  homeCover.classList.remove("is-init");
-		}, 2000);
+		}, 200);
 	  }
 	}
 	  
