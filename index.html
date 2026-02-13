@@ -983,8 +983,8 @@
 	display: block;
 	padding: 0;
 	
-	/* kein Layout-Shift durch Scrollbar */
-	scrollbar-gutter: stable;
+	/* kein Layout-Shift durch Scrollbar #page-home .home-scroll > macht offset am PC*/
+
 
 	}
 
@@ -1070,7 +1070,7 @@
 	  top: 20px; /* 20px unterhalb von home-scroll top (das ist bereits unter dem Menu) */
 
 	  /* rechte Kante am Home-Button */
-	right: calc(var(--home-btn-right) - 15px);
+	right: calc(var(--home-btn-right));
 
 
 	  margin: 0;
@@ -1081,7 +1081,7 @@
 	#page-home #home-latest-cover{
 	  position: absolute;
 
-right: calc(var(--home-btn-right) - 15px);
+	right: calc(var(--home-btn-right));
 
 
 	  /* 20px unter Text: wir nehmen die reale Text-Höhe per JS im nächsten Schritt */
