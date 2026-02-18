@@ -1038,6 +1038,69 @@
 
 
 
+	/* ============================================================
+	   MUSIC — BREAKPOINT <= 850px
+	   Stage oben, Text1 darunter, Text2 darunter (alles zentriert)
+	   ============================================================ */
+	@media (max-width: 850px){
+
+	  /* Scroll-Inhalt als vertikaler Stack */
+	  #page-music .music-scroll{
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	  }
+
+
+
+	  /* Text1 unter Stage */
+		#page-music .music-info{
+		  position: absolute;
+
+		  top: calc(var(--music-stage-w) + 40px);
+		  left: 50%;
+		  transform: translateX(-50%);
+
+		  width: min(calc(100vw - 40px), 60ch);
+
+		  padding-right: 0;
+		  text-align: center;
+		}
+
+
+	  /* Text2 unter Text1 */
+		#page-music .music-info2{
+		  position: absolute;
+
+		  top: calc(var(--music-stage-w) + 20px + var(--music-info-h) + 40px);
+		  left: 50%;
+		  transform: translateX(-50%);
+
+		  width: min(calc(100vw - 40px), 60ch);
+		  margin: 0;
+
+		  text-align: center;
+		}
+
+
+	  /* Links unter Text2 zentrieren */
+	  #page-music .music-info-links{
+		align-items: center;
+	  }
+
+	  /* Surround-Badge zentrieren */
+	  #page-music .music-surround{
+		justify-content: center;
+	  }
+	}
+
+
+
+
+
+
+
+
 
 
 	/* ============================================================
@@ -1420,7 +1483,17 @@
     function activatePage(pageKey, colorHex) {
       // Pages
       
-	  
+		// MUSIC: Text1-Höhe für Breakpoint <= 850 messen
+		if (pageKey === "music"){
+		  const info1 = document.querySelector("#page-music .music-info");
+		  if (info1){
+			requestAnimationFrame(() => {
+			  const h = info1.offsetHeight;
+			  document.documentElement.style.setProperty("--music-info-h", h + "px");
+			});
+		  }
+		}
+			  
 	  
 	  
 	// Alte aktive Page sauber ausblenden (Fade)
