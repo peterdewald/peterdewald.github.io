@@ -1309,6 +1309,37 @@
 	}
 
 
+
+	/* HOME: Mini-Cover unter dem Home-Cover */
+	#page-home #home-latest-cover-mini{
+	  position: absolute;
+
+	  left: 50vw;
+	  transform: translateX(-50%);
+
+	  /* unter dem großen Cover */
+	  top: calc(
+		20px + var(--home-h1-h, 0px) + 70px
+		+ var(--home-cover-size)
+		+ 18px
+	  );
+
+	  width: 90px;
+	  height: 90px;
+	  object-fit: cover;
+
+	  opacity: 0;
+
+	  border: 0;
+	  outline: 0;
+	  box-shadow: none;
+
+	  pointer-events: none;
+	  z-index: 2;
+	}
+
+
+
 	
   </style>
 </head>
@@ -1375,6 +1406,7 @@
   </h1>
   <p></p>
   <img id="home-latest-cover" src="" alt="Latest release cover">
+  <img id="home-latest-cover-mini" src="" alt="" loading="lazy">
 </div>
 
 
@@ -1906,6 +1938,30 @@
 	(function bindHomeCoverClick(){
 	  const img = document.getElementById("home-latest-cover");
 	  if (!img) return;
+
+
+	  // HOME: Mini-Cover immer synchron zum großen Home-Cover halten
+	  const mini = document.getElementById("home-latest-cover-mini");
+	  function syncHomeMini(){
+		if (!mini) return;
+		if (img.src){
+		  mini.src = img.src;
+		  mini.alt = img.alt || "";
+		  mini.style.display = "block";
+		} else {
+		  mini.src = "";
+		  mini.alt = "";
+		  mini.style.display = "none";
+		}
+	  }
+
+	  // initial + nach Laden
+	  syncHomeMini();
+	  img.addEventListener("load", syncHomeMini);
+
+	  // falls src später per JS gesetzt wird: beobachten
+	  new MutationObserver(syncHomeMini).observe(img, { attributes: true, attributeFilter: ["src"] });
+
 
 	  img.addEventListener("click", () => {
 		activatePage("music", "#ffffff");
