@@ -885,7 +885,11 @@
 
 
 		  z-index: 0;
-		  pointer-events: none;
+
+		  pointer-events: auto;
+		  cursor: zoom-in;
+
+
 		  opacity: 1;
 		  transition: opacity 500ms ease;
 
@@ -1023,6 +1027,52 @@
 
 
 
+
+	#page-music .music-badge{
+	  margin-top: 14px;
+
+	  display: flex;
+	  align-items: center;
+	  gap: 12px;
+
+	  color: #ffffff;
+	}
+
+	#page-music .music-badge-icon{
+	  width: 2.2em;
+	  height: 2.2em;
+
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+
+	  flex: 0 0 auto;
+	}
+
+	#page-music .music-badge-icon img{
+	  display: block;
+
+	  max-width: 100%;
+	  max-height: 100%;
+
+	  width: auto;
+	  height: auto;
+
+	  object-fit: contain;
+	}
+
+	#page-music .music-badge-text{
+	  font-family: var(--font);
+	  font-size: var(--typo-button-size);
+	  font-weight: 500;
+	  letter-spacing: 0.06em;
+	  text-transform: uppercase;
+	}
+
+
+
+
+
 	#page-music .music-info2-lastcover{
 	  width: 90px;
 	  height: 90px;
@@ -1139,7 +1189,7 @@
 		#page-music .music-info{
 		  position: absolute;
 
-		  top: calc(var(--music-stage-w) + 40px);
+		  top: calc(var(--music-stage-real-h, var(--music-stage-w)) + 40px);
 		  left: 50%;
 		  transform: translateX(-50%);
 
@@ -1154,7 +1204,7 @@
 		#page-music .music-info2{
 		  position: absolute;
 
-		  top: calc(var(--music-stage-w) + 20px + var(--music-info-h) + 40px);
+		  top: calc(var(--music-stage-real-h, var(--music-stage-w)) + 20px + var(--music-info-h) + 40px);
 		  left: 50%;
 		  transform: translateX(-50%);
 
@@ -1179,7 +1229,108 @@
 
 
 
+	/* ============================================================
+	   LIGHTBOX — Stage-Bild groß anzeigen
+	   ============================================================ */
 
+	.stage-lightbox{
+	  position: fixed;
+	  inset: 0;
+
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+
+	  background: rgba(0,0,0,0.92);
+
+	  opacity: 0;
+	  pointer-events: none;
+
+	  transition: opacity 220ms ease;
+
+	  z-index: 99999;
+	}
+
+	.stage-lightbox.is-open{
+	  opacity: 1;
+	  pointer-events: auto;
+	}
+
+	.stage-lightbox-img{
+	  display: block;
+
+	  width: auto;
+	  height: auto;
+
+	  max-width: calc(100vw - 40px);
+	  max-height: calc(100vh - 40px);
+
+	  object-fit: contain;
+
+	  border: 0;
+	  outline: 0;
+	  box-shadow: none;
+
+	  image-rendering: auto;
+	}
+
+	.stage-lightbox-close{
+	  position: absolute;
+
+	  top: 20px;
+	  right: 20px;
+
+	  width: 44px;
+	  height: 44px;
+
+	  border: 1px solid rgba(255,255,255,0.35);
+	  background: rgba(0,0,0,0.35);
+
+	  color: #ffffff;
+
+	  font-family: var(--font);
+	  font-size: 28px;
+	  line-height: 1;
+
+	  cursor: pointer;
+
+	  backdrop-filter: blur(6px);
+	  -webkit-backdrop-filter: blur(6px);
+
+	  z-index: 2;
+	}
+
+
+
+	.stage-lightbox-lens{
+	  position: fixed;
+
+	  width: 220px;
+	  height: 220px;
+
+	  border: 1px solid rgba(255,255,255,0.45);
+
+	  background-color: rgba(0,0,0,0.25);
+	  background-repeat: no-repeat;
+
+	  border-radius: 0;
+
+	  pointer-events: none;
+
+	  opacity: 0;
+	  transition: opacity 120ms ease;
+
+	  z-index: 3;
+
+	  overflow: hidden;
+
+	  backdrop-filter: blur(2px);
+	  -webkit-backdrop-filter: blur(2px);
+	}
+
+	.stage-lightbox.is-magnifier-active .stage-lightbox-lens{
+	  opacity: 1;
+	}
 
 
 
@@ -1789,6 +1940,9 @@
 		<div class="music-info-links"></div>
 	<div class="music-surround" id="musicSurround" style="display:none">
 
+
+
+
   <span class="music-surround-icon" aria-hidden="true">
     <!-- 5.1 Icon (weiß via currentColor, Hintergrund transparent) -->
     <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
@@ -1809,9 +1963,33 @@
 
     </svg>
   </span>
-  <span class="music-surround-text">Surround Recording</span>
+  <span class="music-surround-text">Surround</span>
 
 </div>
+
+<div class="music-badge" id="musicBadgeVST3" style="display:none">
+  <span class="music-badge-icon" aria-hidden="true">
+    <img src="covers/VST3 Logo 2.webp" alt="">
+  </span>
+  <span class="music-badge-text">VST3</span>
+</div>
+
+<div class="music-badge" id="musicBadgeSE" style="display:none">
+  <span class="music-badge-icon" aria-hidden="true">
+    <img src="covers/SE Logo.webp" alt="">
+  </span>
+  <span class="music-badge-text">SynthEdit</span>
+</div>
+
+<div class="music-badge" id="musicBadgeStandalone" style="display:none">
+  <span class="music-badge-icon" aria-hidden="true">
+    <img src="covers/Stand alone Logo.webp" alt="">
+  </span>
+  <span class="music-badge-text">Standalone</span>
+</div>
+
+
+
 	
 	<img class="music-info2-lastcover" src="" alt="" loading="lazy">		
 		
@@ -1840,6 +2018,25 @@
     </section>
   </main>
 
+
+
+
+
+
+  <!-- ============================================================
+       LIGHTBOX — Stage-Bild groß anzeigen
+       ============================================================ -->
+  <div id="stageLightbox" class="stage-lightbox" aria-hidden="true">
+    <button class="stage-lightbox-close" type="button" aria-label="Lightbox schließen">×</button>
+    <img class="stage-lightbox-img" src="" alt="">
+	<div class="stage-lightbox-lens" aria-hidden="true"></div>
+  </div>
+
+
+
+
+
+
   <!-- ============================================================
        JS — minimal: Seiten umschalten + Wortmarkenfarbe weich wechseln
        ============================================================ -->
@@ -1851,6 +2048,14 @@
 	const menuButtons = document.querySelectorAll('.menu .menu-item');
 
     const pages = document.querySelectorAll('.page');
+
+
+	const stageLightbox = document.getElementById("stageLightbox");
+	const stageLightboxImg = stageLightbox?.querySelector(".stage-lightbox-img");
+	const stageLightboxClose = stageLightbox?.querySelector(".stage-lightbox-close");
+	const stageLightboxLens =
+	  stageLightbox?.querySelector(".stage-lightbox-lens");
+
 
 
 
@@ -1872,6 +2077,32 @@
     // 2) Hilfsfunktion: Seite aktivieren
     // ------------------------------------------------------------
     function activatePage(pageKey, colorHex) {
+	
+	
+	setActiveReleaseDatabase(pageKey);
+	
+	const currentReleaseMode =
+	  (pageKey === "music" || pageKey === "software" || pageKey === "contact")
+		? pageKey
+		: null;
+
+
+	const releaseModeChanged =
+	  currentReleaseMode &&
+	  (
+		!window.__LAST_RELEASE_MODE ||
+		currentReleaseMode !== window.__LAST_RELEASE_MODE
+	  );
+
+
+
+	window.__LAST_RELEASE_MODE = currentReleaseMode || window.__LAST_RELEASE_MODE;
+	if (releaseModeChanged && window.restartMusicRailWithActiveData){
+	  window.restartMusicRailWithActiveData();
+	}
+
+	
+	
       // Pages
       
 		// MUSIC: Text1-Höhe für Breakpoint <= 850 messen
@@ -1889,7 +2120,18 @@
 	  
 	// Alte aktive Page sauber ausblenden (Fade)
 	const current = document.querySelector(".page.active");
-	const target  = document.getElementById('page-' + pageKey);
+	
+	
+	
+	const viewPageKey =
+	  (pageKey === "software" || pageKey === "contact")
+		? "music"
+		: pageKey;
+
+	const target = document.getElementById('page-' + viewPageKey);
+
+
+
 
 	// Alte aktive Page nur ausblenden, wenn es NICHT die Zielseite ist
 	if (current && current !== target){
@@ -1921,6 +2163,10 @@
 	  
 
       if (target) target.classList.add('active');
+	  
+	  
+	  
+	  
 	  
 		// Viewport-Debug nur auf Contact anzeigen
 		const vd = document.getElementById("viewport-debug");
@@ -2010,6 +2256,157 @@
 		activatePage(pageKey, colorHex);
 	  });
 	});
+
+
+
+
+	/* ============================================================
+	   LIGHTBOX — Stage-Bild groß anzeigen
+	   ============================================================ */
+
+	function openStageLightbox(){
+
+	  const currentStageImg =
+		document.querySelector("#page-music .stage-cover.is-current-stage");
+
+	  if (!currentStageImg || !stageLightbox || !stageLightboxImg) return;
+
+	  stageLightboxImg.src = currentStageImg.src;
+	  stageLightboxImg.alt = currentStageImg.alt || "";
+
+	  stageLightbox.classList.add("is-open");
+	  stageLightbox.setAttribute("aria-hidden", "false");
+	}
+
+	function closeStageLightbox(){
+	  if (!stageLightbox) return;
+
+	  stageLightbox.classList.remove("is-open");
+	  stageLightbox.setAttribute("aria-hidden", "true");
+	  
+	  stageLightbox.classList.remove("is-magnifier-active");	  
+	  
+	  
+	}
+
+	document.addEventListener("click", (e) => {
+
+	  const currentStageImg =
+		e.target.closest("#page-music .stage-cover.is-current-stage");
+
+	  if (currentStageImg){
+		openStageLightbox();
+		return;
+	  }
+
+	  if (
+		e.target === stageLightbox ||
+		e.target === stageLightboxClose
+	  ){
+		closeStageLightbox();
+	  }
+	});
+
+	document.addEventListener("keydown", (e) => {
+	  if (e.key === "Escape"){
+		closeStageLightbox();
+	  }
+	});
+
+	if (stageLightbox && stageLightboxImg && stageLightboxLens){
+
+	  const MAGNIFIER_ZOOM = 2.5;
+
+	  stageLightboxImg.addEventListener("mousemove", (e) => {
+		const r = stageLightboxImg.getBoundingClientRect();
+
+		const x = e.clientX - r.left;
+		const y = e.clientY - r.top;
+
+		if (x < 0 || y < 0 || x > r.width || y > r.height){
+		  stageLightbox.classList.remove("is-magnifier-active");
+		  return;
+		}
+
+		stageLightbox.classList.add("is-magnifier-active");
+
+		const lensW = stageLightboxLens.offsetWidth;
+		const lensH = stageLightboxLens.offsetHeight;
+
+		stageLightboxLens.style.left = `${e.clientX - lensW / 2}px`;
+		stageLightboxLens.style.top  = `${e.clientY - lensH / 2}px`;
+
+		stageLightboxLens.style.backgroundImage = `url("${stageLightboxImg.src}")`;
+		stageLightboxLens.style.backgroundSize =
+		  `${r.width * MAGNIFIER_ZOOM}px ${r.height * MAGNIFIER_ZOOM}px`;
+
+		stageLightboxLens.style.backgroundPosition =
+		  `${-(x * MAGNIFIER_ZOOM - lensW / 2)}px ${-(y * MAGNIFIER_ZOOM - lensH / 2)}px`;
+	  });
+
+	  stageLightboxImg.addEventListener("mouseleave", () => {
+		stageLightbox.classList.remove("is-magnifier-active");
+	  });
+	  
+	  
+	  
+	  function updateMagnifierFromPoint(clientX, clientY){
+		const r = stageLightboxImg.getBoundingClientRect();
+
+		const x = clientX - r.left;
+		const y = clientY - r.top;
+
+		if (x < 0 || y < 0 || x > r.width || y > r.height){
+		  stageLightbox.classList.remove("is-magnifier-active");
+		  return;
+		}
+
+		stageLightbox.classList.add("is-magnifier-active");
+
+		const lensW = stageLightboxLens.offsetWidth;
+		const lensH = stageLightboxLens.offsetHeight;
+
+		stageLightboxLens.style.left = `${clientX - lensW / 2}px`;
+		stageLightboxLens.style.top  = `${clientY - lensH / 2}px`;
+
+		stageLightboxLens.style.backgroundImage = `url("${stageLightboxImg.src}")`;
+		stageLightboxLens.style.backgroundSize =
+		  `${r.width * MAGNIFIER_ZOOM}px ${r.height * MAGNIFIER_ZOOM}px`;
+
+		stageLightboxLens.style.backgroundPosition =
+		  `${-(x * MAGNIFIER_ZOOM - lensW / 2)}px ${-(y * MAGNIFIER_ZOOM - lensH / 2)}px`;
+	  }
+
+	  stageLightboxImg.addEventListener("touchstart", (e) => {
+		if (!e.touches || e.touches.length === 0) return;
+
+		const t = e.touches[0];
+		updateMagnifierFromPoint(t.clientX, t.clientY);
+
+		e.preventDefault();
+	  }, { passive:false });
+
+	  stageLightboxImg.addEventListener("touchmove", (e) => {
+		if (!e.touches || e.touches.length === 0) return;
+
+		const t = e.touches[0];
+		updateMagnifierFromPoint(t.clientX, t.clientY);
+
+		e.preventDefault();
+	  }, { passive:false });
+
+	  stageLightboxImg.addEventListener("touchend", () => {
+		stageLightbox.classList.remove("is-magnifier-active");
+	  });
+
+	  stageLightboxImg.addEventListener("touchcancel", () => {
+		stageLightbox.classList.remove("is-magnifier-active");
+	  });	  
+	  
+	  
+	  
+	  
+	}
 
 
 
@@ -2565,6 +2962,181 @@
 	];
 
 
+
+
+
+// Software-Einträge hier
+
+	const SOFTWARE_RELEASES = [
+	 
+	  {
+		id: "1",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/Cqr_F8_n5pg",
+		pdf: null
+	  },
+
+	  {
+		id: "2",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/8UOxVArHo6E",
+		pdf: null
+	  },
+
+	  {
+		id: "3",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/qfeM9WvGasg",
+		pdf: null
+	  },
+
+	  {
+		id: "4",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/Bj8Ez6IwKvo",
+		pdf: null
+	  },
+
+	  {
+		id: "5",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/v1QpLKBPCAg",
+		pdf: null
+	  },
+
+	  {
+		id: "6",
+		year: "?",
+		cover: "covers/under construction.webp", 
+		title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+		yt: "https://youtu.be/Jm2SpVidJMM",
+		pdf: null
+	  },
+
+	  { 
+	  id:"7", 
+	  year:"?", 
+	  cover:"covers/under construction.webp",  
+	  title: "Headline",
+	  text:"Text 1",
+	  text2:"Text 2", 
+	  yt:"https://youtu.be/eNyynyO8iHY", 
+	  pdf: null 
+	  },
+	  
+	  { 
+	  id:"8", 
+	  year:"Space Echo", 
+	  cover:"covers/under construction.webp",  
+	  title:"Space Echo", 
+	  text:"Text 1",
+	  text2:"Text 2", 
+	  yt:"https://youtu.be/VO0svdKeowQ", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"9", 
+	  year:"Tangram 8", 
+	  cover:"covers/Tangram 8.png", 
+	  title:"Tangram 8", 
+	  text:"Text 1",
+	  text2:"Text 2", 
+	  yt:"https://youtu.be/xEfKzYYK6k4", 
+	  pdf:null
+	  },
+	  
+	  { 
+	  id:"10", 
+	  year:"Waveterm D", 
+	  cover:"covers/Waveterm D.png", 
+	  title:"Waveterm D", 
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  yt:"https://youtu.be/aM-UeP-zQFc", 
+	  pdf:"documents/The Fog.pdf",
+	  downloadWin:"https://youtu.be/aM-UeP-zQFc",
+	  downloadMac:"https://youtu.be/aM-UeP-zQFc",
+	  surround: true,	  
+	  vst3: true,
+	  se: true,
+      standalone: true,
+	  },
+	  
+
+	  // später: hier die neuen Einträge ergänzen
+
+
+	 
+	];
+
+
+
+	const CONTACT_RELEASES = [
+	  { 
+	  id:"1", 
+	  year:"Contact 1", 
+	  cover:"covers/Roland.webp",  
+	  title:"Under Construction", 
+	  text:"Text 1",
+	  text2:"Text 2", 
+	  pdf:null 
+	  },
+	  
+	  { 
+	  id:"2", 
+	  year:"Contact 2", 
+	  cover:"covers/Trike 2.webp", 
+	  title:"Under Construction", 
+	  text:"Text 1",
+	  text2:"Text 2", 
+	  pdf:null
+	  },
+	  
+	  { 
+	  id:"3", 
+	  year:"Contact 3", 
+	  cover:"covers/pd Studio 2.webp", 
+	  title:"Contact", 
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  surround: true,	  
+	  vst3: true,
+	  se: true,
+      standalone: true,
+	  },
+
+
+	];
+
+
+
+
+
+
+
 	// HOME — show latest cover (static)
 	(function setHomeLatestCover(){
 	  const img = document.getElementById("home-latest-cover");
@@ -2583,6 +3155,25 @@
 	/* ============================================================
 	   MUSIC — RAIL BUILDER (aus DATA)
 	   ============================================================ */
+	   
+	   
+	let ACTIVE_RELEASES = MUSIC_RELEASES;
+
+	function setActiveReleaseDatabase(pageKey){
+
+	  if (pageKey === "software"){
+		ACTIVE_RELEASES = SOFTWARE_RELEASES;
+
+	  } else if (pageKey === "contact"){
+		ACTIVE_RELEASES = CONTACT_RELEASES;
+
+	  } else {
+		ACTIVE_RELEASES = MUSIC_RELEASES;
+	  }
+	}	   
+	   
+	   
+	   
 
 	function buildMusicRailHTML(list){
 	  // Trenner-Jahre: „eigene Zeile zwischen Covern“
@@ -2617,16 +3208,42 @@
 	const inner = rail.querySelector(".music-rail-inner");
 	if (!inner) return;
 
-	/* Rail aus zentraler Liste bauen */
-	inner.innerHTML = buildMusicRailHTML(MUSIC_RELEASES);
-	
-	
-	
 
-	/* Jetzt: Items/Thumbs neu einlesen (weil sie gerade erst erzeugt wurden) */
-	const items = Array.from(rail.querySelectorAll(".rail-item"));
-	items.forEach((b, i) => b.dataset.index = String(i));
-	const thumbs = items.map(b => b.querySelector(".rail-thumb"));
+
+
+
+	/* Rail aus zentraler Liste bauen */
+	let items = [];
+	let thumbs = [];
+
+	function reloadMusicRailData(){
+
+	  /* Rail aus aktiver Datenbank bauen */
+	  inner.innerHTML = buildMusicRailHTML(ACTIVE_RELEASES);
+
+	  /* Items/Thumbs neu einlesen */
+	  items = Array.from(rail.querySelectorAll(".rail-item"));
+	  items.forEach((b, i) => b.dataset.index = String(i));
+
+	  thumbs = items.map(b => b.querySelector(".rail-thumb"));
+	}
+
+	reloadMusicRailData();
+
+	window.reloadMusicRailData = reloadMusicRailData;
+
+	function restartMusicRailWithActiveData(){
+
+	  reloadMusicRailData();
+
+	  requestAnimationFrame(() => {
+		runMusicIntro();
+	  });
+	}
+
+	window.restartMusicRailWithActiveData = restartMusicRailWithActiveData;
+
+
 
 	if (items.length === 0) return;
 
@@ -2824,19 +3441,45 @@
 		
 
 		const bestId = Number(id);
-		const data = MUSIC_RELEASES.find(x => Number(x.id) === bestId);
+		const data = ACTIVE_RELEASES.find(x => Number(x.id) === bestId);
 
 		// Stage-Cover Crossfade
 		const stage = document.querySelector("#page-music .music-stage");
 		if (stage){
 		  const current = stage.querySelector(".stage-cover");
+		  if (current) current.classList.remove("is-current-stage");
 		  if (data && data.cover){
+
 			const img = document.createElement("img");
-			img.className = "stage-cover";
+			img.className = "stage-cover is-current-stage";
+
 			img.src = data.cover;
 			img.alt = data.title || "";
 			img.style.opacity = "0";
 			stage.appendChild(img);
+
+
+			const refreshAfterStageImageReady = () => {
+			  requestAnimationFrame(() => {
+				const realStageH = img.getBoundingClientRect().height || 0;
+
+				if (realStageH > 0){
+				  document.documentElement.style.setProperty(
+					"--music-stage-real-h",
+					`${realStageH}px`
+				  );
+				}
+
+			  });
+			};
+
+			if (img.complete){
+			  refreshAfterStageImageReady();
+			} else {
+			  img.onload = refreshAfterStageImageReady;
+			}
+
+
 
 			requestAnimationFrame(() => {
 			  img.style.opacity = "1";
@@ -2869,16 +3512,19 @@
 		if (infoBox2) infoBox2.style.opacity = "1";
 
 		// NEU: Höhe von Text1 an CSS geben (für Text2-Position unter Text1)
+
+
 		requestAnimationFrame(() => {
-		  const box = document.querySelector("#page-music .music-info");
-		  if (!box) return;
-		  const h = box.getBoundingClientRect().height || 0;
-		  document.documentElement.style.setProperty("--music-info-h", `${h}px`);
-		    const musicScroll = document.querySelector("#page-music .music-scroll");
-			if (musicScroll){
+		  refreshMusicMeasurements();
+
+		  const musicScroll = document.querySelector("#page-music .music-scroll");
+		  if (musicScroll){
 			musicScroll.scrollTo({ top: 0, behavior: "smooth" });
-			}
+		  }
 		});
+
+
+
 
 		const t1 = document.querySelector("#page-music .music-info-title");
 		const b1 = document.querySelector("#page-music .music-info-body");
@@ -2928,13 +3574,58 @@
 			a.textContent = "PDF Download";
 			l2.appendChild(a);
 		  }
+
+		  if (data && data.downloadWin){
+			const a = document.createElement("a");
+			a.href = data.downloadWin;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "Free Download Win PC";
+			l2.appendChild(a);
+		  }
+
+		  if (data && data.downloadMac){
+			const a = document.createElement("a");
+			a.href = data.downloadMac;
+			a.target = "_blank";
+			a.rel = "noopener";
+			a.textContent = "Free Download Mac OS";
+			l2.appendChild(a);
+		  }
 		}
+
+
+
+
+
+
 		
 		// Surround-Badge (nur wenn Release surround produziert)
 		const surr = document.getElementById("musicSurround");
 		if (surr){
 		  surr.style.display = (data && data.surround) ? "flex" : "none";
 		}
+
+
+
+		const badgeVST3 = document.getElementById("musicBadgeVST3");
+		if (badgeVST3){
+		  badgeVST3.style.display = (data && data.vst3) ? "flex" : "none";
+		}
+
+		const badgeSE = document.getElementById("musicBadgeSE");
+		if (badgeSE){
+		  badgeSE.style.display = (data && data.se) ? "flex" : "none";
+		}
+
+		const badgeStandalone = document.getElementById("musicBadgeStandalone");
+		if (badgeStandalone){
+		  badgeStandalone.style.display = (data && data.standalone) ? "flex" : "none";
+		}
+
+
+
+
 				
 		// Mini-Cover unter Text2 (immer letztes Element)
 		const mini = document.querySelector("#page-music .music-info2-lastcover");
@@ -3335,8 +4026,18 @@
 	}
 
 	function runMusicIntro(){
+		window.runMusicIntro = runMusicIntro;
 	  if (introRunning) return;
 	  introRunning = true;
+	  
+	  const menuRail = document.getElementById("menuRail");
+	  if (menuRail){
+		menuRail.style.pointerEvents = "none";
+	  }	  
+	  
+	  
+	  
+	  
 	  lastCommitId = null;
 
 
@@ -3385,10 +4086,25 @@
 	  const b1 = getBounds();
 	  const endX = clamp(snapXForIndex(snapIndex), b1.minX, b1.maxX);
 
+
+	  const INTRO_MS_PER_ITEM = 85;
+
+	  const MIN_INTRO_MS = 500;
+	  const MAX_INTRO_MS = 2500;
+
+	  const introMs = Math.max(
+		MIN_INTRO_MS,
+		Math.min(
+		  MAX_INTRO_MS,
+		  items.length * INTRO_MS_PER_ITEM
+		)
+	  );
+
+
 	  const t0 = performance.now();
 
 	  function step(now){
-		const t = clamp((now - t0) / INTRO_MS, 0, 1);
+		const t = clamp((now - t0) / introMs, 0, 1);
 		const k = easeInOutQuad(t);
 
 		const v = startX + (endX - startX) * k;
@@ -3419,8 +4135,13 @@
 		  if (infoBox) infoBox.style.opacity = "0";
 
 		  setTimeout(() => {
-			commitSelection();      // baut Stage/Text wieder auf
-			introRunning = false;   // ab hier wieder normale Bedienung
+			commitSelection();
+			introRunning = false;
+
+			const menuRail = document.getElementById("menuRail");
+			if (menuRail){
+			  menuRail.style.pointerEvents = "auto";
+			}
 		  }, 50);
 		}
 	  }
@@ -3482,7 +4203,20 @@ function refreshMusicMeasurements(){
   if (!box) return;
 
   const h = box.getBoundingClientRect().height || 0;
+  
   document.documentElement.style.setProperty("--music-info-h", `${h}px`);
+  const stageImg = document.querySelector("#page-music .stage-cover.is-current-stage");
+
+  if (stageImg){
+    const realStageH = stageImg.getBoundingClientRect().height || 0;
+
+    if (realStageH > 0){
+      document.documentElement.style.setProperty(
+        "--music-stage-real-h",
+        `${realStageH}px`
+      );
+    }
+  }  
 }
 
 window.addEventListener("resize", () => requestAnimationFrame(refreshMusicMeasurements));
