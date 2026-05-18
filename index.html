@@ -1975,7 +1975,7 @@
   <span class="music-badge-icon" aria-hidden="true">
     <img src="covers/VST3 Logo 2.webp" alt="">
   </span>
-  <span class="music-badge-text">VST3</span>
+  <span class="music-badge-text">VST3 PLUGIN</span>
 </div>
 
 <div class="music-badge" id="musicBadgeSE" style="display:none">
@@ -2206,7 +2206,8 @@
 		// NEU: beim Seitenwechsel immer nach oben
 		const scroller = document.querySelector('.content');
 		if (scroller) scroller.scrollTop = 0;
-			  
+		const homeScroll = document.querySelector("#page-home .home-scroll");
+		if (homeScroll) homeScroll.scrollTop = 0;			  
 	  
 	  
 
@@ -2955,7 +2956,7 @@
 	  year:"2025", 
 	  cover:"covers/23 The Fog Cover.webp", 
 	  title:"The Fog",
-	  text:"Inspired by Hermann Hesse’s Im Nebel, *The Fog* translates its atmosphere and inner state into a minimalist musical form.\n\nSparse structures and restrained motion drift beneath perception, shaped by distance and inner alienation.", 
+	  text:"Inspired by Hermann Hesse’s Im Nebel, *The Fog* translates its atmosphere of distance, separation and inner silence into a restrained minimalist form. \n\nStructures emerge only faintly through the haze, \ndrifting between presence and disappearance, while correlations gradually dissolve into isolation.", 
 	  text2:"Composed, arranged and performed in 2025\n\nInstruments: Roland, Moog, PPG, Behringer\n\nRecorded at Saturn 5 Studio\n\nMastered by Überschall",  
 	  yt:"https://youtu.be/OGcduKUGqbc",
 	  surround: true,	  
@@ -3070,35 +3071,38 @@
 	const CONTACT_RELEASES = [
 	  { 
 	  id:"1", 
-	  year:"Contact 1", 
-	  cover:"covers/under construction.webp",  
-	  title:"Under Construction", 
-	  text:"Under Construction",
-	  text2:"Under Construction 2", 
-	  pdf:null, 
+	  year:"Privacy", 
+	  cover:"covers/Roland.webp",  
+	  title:"Privacy", 
+	  text:"This website does not use\ntracking, analytics or cookies.\n\nNo personal data is collected,\nstored or shared for any purpose.\n\nEmbedded content and external links\nmay be subject to the privacy policies\nof their respective providers.",
+	  text2:"No tracking\nNo analytics\nNo advertising\nNo profiling\nNo data sharing", 
+	  pdf:null,
+      standalone: true,	  
 	  },
 	  
 	  { 
 	  id:"2", 
-	  year:"Contact 2", 
-	  cover:"covers/under construction.webp", 
-	  title:"Under Construction", 
-	  text:"Under Construction",
-	  text2:"Under Construction 2", 
+	  year:"Legal", 
+	  cover:"covers/Roland.webp", 
+	  title:"Legal", 
+	  text:"Responsible for the content of this website:\n\nPeter Dewald\nGermany\n\nContact:\np.dewald@gmx.de\n\n\nExternal links:\nDespite careful control of content,\nno liability is assumed for external websites.\n\n\nAll content © Peter Dewald.",
+	  text2:"VST® is a trademark of Steinberg Media Technologies GmbH, registered in Europe and other countries.\n\nFree Stock video by Videezy.com", 
+	  vst3: true,
+	  se: true,
 	  pdf:null,
 	  },
 	  
 	  { 
 	  id:"3", 
-	  year:"Contact 3", 
+	  year:"Contact", 
 	  cover:"covers/Roland.webp", 
 	  title:"Contact", 
-	  text:"Under Construction",
-	  text2:"Under Construction 2", 
-	  surround: false,	  
-	  vst3: false,
+	  text:"Through sound, images, machines and fragments of code,\ndifferent paths gradually became part of the same space.\n\nIf something here resonates with you,\nfeel free to get in touch.\n\nsaturn-five-studio@gmx.de",
+	  text2:"classic electronic music\n\n5.1 surround production\n\nmusic software", 
+	  surround: true,	  
+	  vst3: true,
 	  se: false,
-      standalone: false,
+      standalone: true,
 	  },
 
 
