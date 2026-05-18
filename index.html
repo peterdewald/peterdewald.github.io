@@ -1224,6 +1224,10 @@
 	  #page-music .music-surround{
 		justify-content: center;
 	  }
+	  .music-badge{
+	  justify-content:center;
+	  text-align:center;
+	}
 	}
 
 
@@ -1414,8 +1418,8 @@
 	  filter: grayscale(1);
 	  image-rendering: auto;
 
-	  pointer-events: auto;
-	  cursor: pointer;
+		pointer-events: none;
+		cursor: default;
 
 	  z-index: 2;
 	}
@@ -2970,118 +2974,87 @@
 	const SOFTWARE_RELEASES = [
 	 
 	  {
-		id: "1",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/Cqr_F8_n5pg",
-		pdf: null
-	  },
-
-	  {
-		id: "2",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/8UOxVArHo6E",
-		pdf: null
-	  },
-
-	  {
-		id: "3",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/qfeM9WvGasg",
-		pdf: null
-	  },
-
-	  {
-		id: "4",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/Bj8Ez6IwKvo",
-		pdf: null
-	  },
-
-	  {
-		id: "5",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/v1QpLKBPCAg",
-		pdf: null
-	  },
-
-	  {
-		id: "6",
-		year: "?",
-		cover: "covers/under construction.webp", 
-		title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-		yt: "https://youtu.be/Jm2SpVidJMM",
-		pdf: null
+	  id: "1",
+	  year: "?",
+	  cover: "covers/under construction.webp", 
+	  title: "Headline",
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  yt: null, 
+	  pdf: null,
+	  downloadWin: null,
+	  downloadMac: null,
+	  surround: false,	  
+	  vst3: true,
+	  se: true,
+      standalone: false,
 	  },
 
 	  { 
-	  id:"7", 
+	  id:"2", 
 	  year:"?", 
 	  cover:"covers/under construction.webp",  
 	  title: "Headline",
-	  text:"Text 1",
-	  text2:"Text 2", 
-	  yt:"https://youtu.be/eNyynyO8iHY", 
-	  pdf: null 
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  yt: null, 
+	  pdf: null,
+	  downloadWin: null,
+	  downloadMac: null,
+	  surround: false,	  
+	  vst3: true,
+	  se: true,
+      standalone: false, 
 	  },
 	  
 	  { 
-	  id:"8", 
+	  id:"3", 
 	  year:"Space Echo", 
 	  cover:"covers/under construction.webp",  
 	  title:"Space Echo", 
-	  text:"Text 1",
-	  text2:"Text 2", 
-	  yt:"https://youtu.be/VO0svdKeowQ", 
-	  pdf:null 
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  yt: null, 
+	  pdf: null,
+	  downloadWin: null,
+	  downloadMac: null,
+	  surround: false,	  
+	  vst3: true,
+	  se: true,
+      standalone: false, 
 	  },
 	  
 	  { 
-	  id:"9", 
+	  id:"4", 
 	  year:"Tangram 8", 
 	  cover:"covers/Tangram 8.png", 
 	  title:"Tangram 8", 
-	  text:"Text 1",
-	  text2:"Text 2", 
-	  yt:"https://youtu.be/xEfKzYYK6k4", 
-	  pdf:null
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  yt: null, 
+	  pdf: null,
+	  downloadWin: null,
+	  downloadMac: null,
+	  surround: false,	  
+	  vst3: true,
+	  se: true,
+      standalone: false,
 	  },
 	  
 	  { 
-	  id:"10", 
+	  id:"5", 
 	  year:"Waveterm D", 
 	  cover:"covers/Waveterm D.png", 
 	  title:"Waveterm D", 
 	  text:"Under Construction",
 	  text2:"Under Construction 2", 
-	  yt:"https://youtu.be/aM-UeP-zQFc", 
-	  pdf:"documents/The Fog.pdf",
-	  downloadWin:"https://youtu.be/aM-UeP-zQFc",
-	  downloadMac:"https://youtu.be/aM-UeP-zQFc",
-	  surround: true,	  
-	  vst3: true,
-	  se: true,
+	  yt: null, 
+	  pdf: null,
+	  downloadWin: null,
+	  downloadMac: null,
+	  surround: false,	  
+	  vst3: false,
+	  se: false,
       standalone: true,
 	  },
 	  
@@ -3098,34 +3071,34 @@
 	  { 
 	  id:"1", 
 	  year:"Contact 1", 
-	  cover:"covers/Roland.webp",  
+	  cover:"covers/under construction.webp",  
 	  title:"Under Construction", 
-	  text:"Text 1",
-	  text2:"Text 2", 
-	  pdf:null 
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  pdf:null, 
 	  },
 	  
 	  { 
 	  id:"2", 
 	  year:"Contact 2", 
-	  cover:"covers/Trike 2.webp", 
+	  cover:"covers/under construction.webp", 
 	  title:"Under Construction", 
-	  text:"Text 1",
-	  text2:"Text 2", 
-	  pdf:null
+	  text:"Under Construction",
+	  text2:"Under Construction 2", 
+	  pdf:null,
 	  },
 	  
 	  { 
 	  id:"3", 
 	  year:"Contact 3", 
-	  cover:"covers/pd Studio 2.webp", 
+	  cover:"covers/Roland.webp", 
 	  title:"Contact", 
 	  text:"Under Construction",
 	  text2:"Under Construction 2", 
-	  surround: true,	  
-	  vst3: true,
-	  se: true,
-      standalone: true,
+	  surround: false,	  
+	  vst3: false,
+	  se: false,
+      standalone: false,
 	  },
 
 
@@ -3138,18 +3111,20 @@
 
 
 	// HOME — show latest cover (static)
-	(function setHomeLatestCover(){
-	  const img = document.getElementById("home-latest-cover");
-	  if (!img) return;
 
-	  // "letztes Cover" = höchstes id
-	  const latest = [...MUSIC_RELEASES].sort((a,b) => Number(b.id) - Number(a.id))[0];
-	  if (!latest || !latest.cover) return;
+	const homeCover = document.getElementById('home-latest-cover');
 
-	  img.src = latest.cover;
-	})();
+	if (homeCover){
 
+	  homeCover.src = "covers/pd Studio 2.webp";
 
+	  homeCover.style.opacity = "0";
+
+	  requestAnimationFrame(() => {
+		homeCover.style.transition = "opacity 8s ease";
+		homeCover.style.opacity = "1";
+	  });
+	}
 
 
 	/* ============================================================
