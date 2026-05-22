@@ -1242,10 +1242,10 @@
 	  inset: 0;
 
 	  display: flex;
-	  align-items: center;
+		align-items: flex-start;
 	  justify-content: center;
-
-	  background: rgba(0,0,0,0.92);
+		padding-top: 20px;
+	  background: rgba(0,0,0,0.80);
 
 	  opacity: 0;
 	  pointer-events: none;
@@ -3046,13 +3046,13 @@
 	  id:"5", 
 	  year:"Waveterm D", 
 	  cover:"covers/Waveterm D.png", 
-	  title:"Waveterm D", 
-	  text:"Under Construction",
-	  text2:"Under Construction 2", 
+	  title:"The Waveterm D Story",
+	  text:"I’ve been working with the original PPG Wave 2.2 and Waveterm A for a very long time now.\n\nAnd like most machines from the last century, they were not always easy to live with.\nStill, I kept repairing those PPGs, bringing them back to life and putting them back into action — \nsimply because only a Wave sounds like a Wave.\n\nSo when Behringer released the new Wave, I honestly didn’t expect much.\n\nAs it turns out, they got remarkably close to the original sound and behaviour. Even some of the unnecessary quirks and bugs somehow made it into modern times as well.\n\nWhat never came back, however, was the Waveterm A with its strange way of creating wavetables.\n\nAnd somewhere around that point, Waveterm D slowly started to take shape.\n\n Not as a clone, but more as an attempt to imagine what Wolfgang Palm might have built if computer mice and screen resolutions beyond 320 × 240 had already existed back then.\n",	  
+	  text2:"Waveterm D is a dedicated wavetable design and authoring tool for the Behringer Wave with direct USB export support.\nDesigned as a direct one-page environment without deep submenu structures.\n\n+ Single-wave editing with realtime audiovisual feedback\n+ Original PPG-style 64-harmonic single-wave generation\n+ Freely adjustable PPG-style distortion level\n+ Harmonic levels editable by numeric values, formulas, bipolar graphic bars and random functions\n\n+ Original PPG-style harmonic interpolation calculation\n+ Wavetable loop authoring with PPG, interpolated and true-position playback modes\n\n+ Import, analyse and reconstruct wavetable .wav files\n+ Full USB wavetable export support for the Behringer Wave\n+ Optimized for 1920 × 1200 resolution\n\nDownload and unpack the ZIP archive to any location and start the EXE or app. Windows SmartScreen or macOS Gatekeeper may display a security warning because Waveterm D is independently developed and not digitally signed. See PDF for further instructions. \n\nDownload Version: 1.525", 
 	  yt: null, 
-	  pdf: null,
-	  downloadWin: null,
-	  downloadMac: null,
+	  pdf: "documents/Waveterm D V1_525.pdf", 
+	  downloadWin: "https://github.com/peterdewald/Waveterm_D/releases/download/V1.525/WAVETERM_D_V1_525.PC.zip",
+	  downloadMac: "https://github.com/peterdewald/Waveterm_D/releases/download/V1.525/WAVETERM_D_V1_525_MacOS.zip",
 	  surround: false,	  
 	  vst3: false,
 	  se: false,
@@ -3234,7 +3234,7 @@
 	  const INTRO_MS = 2000;          // Startanimation-Dauer
 	  const FADE_MS  = 500;           // muss zu deinen CSS-Transitions passen
 	  let introRunning = false;
-
+		let introToken = 0;
 
 
 
@@ -3557,7 +3557,7 @@
 		  if (data && data.downloadWin){
 			const a = document.createElement("a");
 			a.href = data.downloadWin;
-			a.target = "_blank";
+
 			a.rel = "noopener";
 			a.textContent = "Free Download Win PC";
 			l2.appendChild(a);
@@ -3566,7 +3566,7 @@
 		  if (data && data.downloadMac){
 			const a = document.createElement("a");
 			a.href = data.downloadMac;
-			a.target = "_blank";
+
 			a.rel = "noopener";
 			a.textContent = "Free Download Mac OS";
 			l2.appendChild(a);
@@ -4005,14 +4005,11 @@
 	}
 
 	function runMusicIntro(){
+	const myToken = ++introToken;
 		window.runMusicIntro = runMusicIntro;
-	  if (introRunning) return;
 	  introRunning = true;
 	  
-	  const menuRail = document.getElementById("menuRail");
-	  if (menuRail){
-		menuRail.style.pointerEvents = "none";
-	  }	  
+  
 	  
 	  
 	  
@@ -4083,6 +4080,16 @@
 	  const t0 = performance.now();
 
 	  function step(now){
+	  
+ 
+	  
+		if (myToken !== introToken){
+		  introRunning = false;
+		  return;
+		}	  
+	  
+	  
+	  
 		const t = clamp((now - t0) / introMs, 0, 1);
 		const k = easeInOutQuad(t);
 
@@ -4113,15 +4120,17 @@
 		  if (stage) stage.style.opacity = "1";
 		  if (infoBox) infoBox.style.opacity = "0";
 
-		  setTimeout(() => {
-			commitSelection();
-			introRunning = false;
+			setTimeout(() => {
 
-			const menuRail = document.getElementById("menuRail");
-			if (menuRail){
-			  menuRail.style.pointerEvents = "auto";
-			}
-		  }, 50);
+			  if (myToken !== introToken){
+				introRunning = false;
+				return;
+			  }
+
+			  commitSelection();
+			  introRunning = false;
+
+			}, 50);
 		}
 	  }
 
